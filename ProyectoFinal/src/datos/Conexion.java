@@ -11,7 +11,7 @@ public class Conexion {
     public static Connection realizarConexion() throws ClassNotFoundException, SQLException {
         String url, user, password;
         Class.forName("com.mysql.cj.jdbc.Driver");
-        url = "jdbc:mysql://localhost:3306/alquiler_automoviles";
+        url = "jdbc:mysql://localhost:3306/supermercado";
         user = "root";
         password = "natali19";
         return DriverManager.getConnection(url, user, password);
