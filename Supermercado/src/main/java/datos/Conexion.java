@@ -18,15 +18,4 @@ public class Conexion {
         password = "natali19";
         return DriverManager.getConnection(url, user, password);
     } 
-    public static void main(String[] args) {
-        try {
-            Connection c = realizarConexion();
-            if (c != null) {
-                System.out.println("¡CONEXIÓN EXITOSA A LA BASE DE DATOS SUPERMERCADO!");
-                c.close();
-            }
-        } catch (Exception e) {
-            System.out.println("Error al conectar: " + e.getMessage());
-        }
-    }
 }
