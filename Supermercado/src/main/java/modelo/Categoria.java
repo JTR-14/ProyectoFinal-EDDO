@@ -16,6 +16,15 @@ public class Categoria {
     public Categoria() {
     }
 
+    public Categoria(String nombre) {
+        this.nombre = nombre;
+    }
+    
+    public Categoria(int idCategoria, String nombre) {
+        this.idCategoria = idCategoria;
+        this.nombre = nombre;
+    }
+
     public int getIdCategoria() {
         return idCategoria;
     }
