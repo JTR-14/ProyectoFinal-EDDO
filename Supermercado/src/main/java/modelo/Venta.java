@@ -4,7 +4,10 @@
  */
 package modelo;
 
-
+/**
+ *
+ * @author Toledo
+ */
 public class Venta {
     private int idVenta;
     private String fecha;

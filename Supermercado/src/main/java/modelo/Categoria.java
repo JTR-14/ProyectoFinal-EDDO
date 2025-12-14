@@ -3,7 +3,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package modelo;
-    
+
+/**
+ *
+ * @author Toledo
+ */   
 
 public class Categoria {
     private int idCategoria;

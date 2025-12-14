@@ -4,7 +4,10 @@
  */
 package modelo;
 
-
+/**
+ *
+ * @author Toledo
+ */
 public class Usuario {
 
     private int idUsuario;

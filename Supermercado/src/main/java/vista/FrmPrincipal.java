@@ -8,7 +8,7 @@ import modelo.Usuario;
 
 /**
  *
- * @author USER
+ * @author Toledo
  */
 public class FrmPrincipal extends javax.swing.JFrame {
     

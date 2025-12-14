@@ -12,7 +12,7 @@ import modelo.Usuario;
 
 /**
  *
- * @author USER
+ * @author Toledo
  */
 public class FrmLogin extends javax.swing.JFrame {
     
