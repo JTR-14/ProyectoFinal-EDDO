@@ -4,10 +4,12 @@
  */
 package vista;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import datos.DALCategoria;
 import datos.DALProductos;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 import modelo.Categoria;
 import modelo.Producto;
@@ -167,8 +169,10 @@ private void llenarTabla() {
         btnGuardar.addActionListener(this::btnGuardarActionPerformed);
 
         btnModificar.setText("MODIFICAR");
+        btnModificar.addActionListener(this::btnModificarActionPerformed);
 
         btnEliminar.setText("ELIMINAR");
+        btnEliminar.addActionListener(this::btnEliminarActionPerformed);
 
         btnLimpiar.setText("LIMPIAR");
         btnLimpiar.addActionListener(this::btnLimpiarActionPerformed);
@@ -211,6 +215,11 @@ private void llenarTabla() {
 
             }
         ));
+        tblProductos.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblProductosMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblProductos);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -263,45 +272,157 @@ private void llenarTabla() {
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
        try{ 
+
+        if(txtCodigo.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese codigo de producto","AVISO",2);
+            return;
+        }
+        if(txtNombre.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese nombre de producto","AVISO",2);
+            return;
+        }
+        if(txtCosto.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese precio de costo del producto","AVISO",2);
+            return;
+        }
+        if(txtVenta.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese precio de venta del producto","AVISO",2);
+            return;
+        }
+        if(txtStock.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese stock del producto","AVISO",2);
+            return;
+        }
+        if(txtStockMin.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese stock minimo del producto","AVISO",2);
+            return;
+        }
+        if(cmbCategoria.getSelectedIndex() == 0){
+            JOptionPane.showMessageDialog(null, "Seleccione categoria del Producto","AVISO",2);
+            return;
+        }
         codigo = txtCodigo.getText().trim();
         nombre = txtNombre.getText().trim();
-        String precioCosto = txtCosto.getText().trim();
-        String precioVenta = txtVenta.getText().trim();
-        if(codigo.isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese codigo de producto","AVISO",2);
-            return;
-        }
-        if(nombre.isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese codigo de producto","AVISO",2);
-            return;
-        }
-        if(precioCosto.isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese codigo de producto","AVISO",2);
-            return;
-        }
-        if(codigo.isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese codigo de producto","AVISO",2);
-            return;
-        }
-        if(codigo.isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese codigo de producto","AVISO",2);
-            return;
-        }
-        if(codigo.isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese codigo de producto","AVISO",2);
-            return;
-        }
-        this.precioCosto = Double.parseDouble(precioCosto);
-        this.precioVenta = Double.parseDouble(txtVenta.getText().trim());
-        this.stockActual = Integer.parseInt(txtStock.getText().trim());
-        this.stockMinimo = Integer.parseInt(txtStockMin.getText().trim());
+        precioCosto = Double.parseDouble(txtCosto.getText().trim());
+        precioVenta = Double.parseDouble(txtVenta.getText().trim());
+        stockActual = Integer.parseInt(txtStock.getText().trim());
+        stockMinimo = Integer.parseInt(txtStockMin.getText().trim());
         Categoria categoria = (Categoria) cmbCategoria.getSelectedItem();
         this.idCategoria = categoria.getIdCategoria();
-       
+        
+       if(DALProductos.insertarProducto(codigo, nombre, precioCosto, precioVenta, stockActual, stockMinimo, idCategoria)){
+           JOptionPane.showMessageDialog(null, "Producto agregado correctamente","MENSAJE",1);
+            llenarTabla();
+            limpiar();
+       }
+       else
+           JOptionPane.showMessageDialog(null, "No se pudo agregar el Producto","ERROR",0);
        }catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Revise los campos numéricos");
         }
     }//GEN-LAST:event_btnGuardarActionPerformed
+
+    private void btnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarActionPerformed
+      try{ 
+        if (txtId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Seleccione un producto de la tabla");
+        return;
+         }
+        if(txtCodigo.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese codigo de producto","AVISO",2);
+            return;
+        }
+        if(txtNombre.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese nombre de producto","AVISO",2);
+            return;
+        }
+        if(txtCosto.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese precio de costo del producto","AVISO",2);
+            return;
+        }
+        if(txtVenta.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese precio de venta del producto","AVISO",2);
+            return;
+        }
+        if(txtStock.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese stock del producto","AVISO",2);
+            return;
+        }
+        if(txtStockMin.getText().trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, "Ingrese stock minimo del producto","AVISO",2);
+            return;
+        }
+        if(cmbCategoria.getSelectedIndex() == 0){
+            JOptionPane.showMessageDialog(null, "Seleccione categoria del Producto","AVISO",2);
+            return;
+        }
+        idProducto = Integer.parseInt(txtId.getText());
+        codigo = txtCodigo.getText().trim();
+        nombre = txtNombre.getText().trim();
+        precioCosto = Double.parseDouble(txtCosto.getText().trim());
+        precioVenta = Double.parseDouble(txtVenta.getText().trim());
+        stockActual = Integer.parseInt(txtStock.getText().trim());
+        stockMinimo = Integer.parseInt(txtStockMin.getText().trim());
+        Categoria categoria = (Categoria) cmbCategoria.getSelectedItem();
+        this.idCategoria = categoria.getIdCategoria();
+        
+       if(DALProductos.modificarProducto(idProducto, codigo, nombre, precioCosto, precioVenta, stockActual, stockMinimo, idCategoria)){
+           JOptionPane.showMessageDialog(null, "Producto modificado correctamente","MENSAJE",1);
+            llenarTabla();
+            limpiar();
+       }
+       else
+           JOptionPane.showMessageDialog(null, "Error al Modificar","ERROR",0);
+        
+         }catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Revise los campos numéricos");
+        }
+    }//GEN-LAST:event_btnModificarActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        if (txtId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Seleccione un producto primero");
+            return;
+        }
+        
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Eliminar producto?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            idProducto = Integer.parseInt(txtId.getText());
+            if (DALProductos.eliminarProducto(idProducto)) {
+                JOptionPane.showMessageDialog(this, "Eliminado","Mensaje",1);
+                llenarTabla();
+                limpiar();
+            } else {
+                JOptionPane.showMessageDialog(this, "No se pudo eliminar (Puede tener ventas)");
+            }
+        }
+    }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void tblProductosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblProductosMouseClicked
+        
+        int fila = tblProductos.getSelectedRow();
+        
+        if (fila >= 0) {
+
+            txtId.setText(tblProductos.getValueAt(fila, 0).toString());
+            txtCodigo.setText(tblProductos.getValueAt(fila, 1).toString());
+            txtNombre.setText(tblProductos.getValueAt(fila, 2).toString());
+            txtCosto.setText(tblProductos.getValueAt(fila, 3).toString());
+            txtVenta.setText(tblProductos.getValueAt(fila, 4).toString());
+            txtStock.setText(tblProductos.getValueAt(fila, 5).toString());
+            txtStockMin.setText(tblProductos.getValueAt(fila, 6).toString());
+            
+            int idCategoria = Integer.parseInt(tblProductos.getValueAt(fila, 7).toString());
+            
+            for (int i = 0; i < cmbCategoria.getItemCount(); i++) {
+                Categoria item = cmbCategoria.getItemAt(i);
+                if (item.getIdCategoria() == idCategoria) {
+                    cmbCategoria.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+    }//GEN-LAST:event_tblProductosMouseClicked
     private void limpiar(){
         txtId.setText("");
         txtCodigo.setText("");
@@ -313,10 +434,6 @@ private void llenarTabla() {
         cmbCategoria.setSelectedIndex(0);
         txtCodigo.requestFocus();
     }
-    /**
-     * @param args the command line arguments
-     */
-   
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEliminar;

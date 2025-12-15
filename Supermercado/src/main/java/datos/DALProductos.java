@@ -89,7 +89,6 @@ public class DALProductos {
         return lista;
     }
 
-    // 4. MÉTODO BUSCAR (Por ID - Vital para cuando seleccionas una fila de la tabla)
     public static Producto buscarProducto(int id) {
         String sql = "SELECT * FROM productos WHERE id_productos = ?";
         Producto prod = null;
@@ -119,7 +118,6 @@ public class DALProductos {
         return prod;
     }
 
-    // 5. MÉTODO ELIMINAR (Usamos ID por seguridad)
     public static boolean eliminarProducto(int id) {
         String sql = "DELETE FROM productos WHERE id_productos = ?";
 
@@ -135,7 +133,7 @@ public class DALProductos {
         }
     }
     
-    // 6. EXTRA: BUSCAR POR CÓDIGO DE BARRAS (Útil para la pantalla de Ventas)
+
     public static Producto buscarPorCodigo(String codigoBarras) {
         String sql = "SELECT * FROM productos WHERE codigo = ?";
         Producto prod = null;

@@ -151,7 +151,7 @@ public class FrmLogin extends javax.swing.JFrame {
         Usuario usuario = DALUsuarios.login(username, contrasenia);
         if(usuario != null){
             JOptionPane.showMessageDialog(null, "¡Bienvenido "+usuario.getNombreCompleto(),"Mensaje",1);
-            FrmPrincipal principal = new FrmPrincipal();
+            FrmProductos principal = new FrmProductos();
             this.dispose();
             principal.setVisible(true);
             
