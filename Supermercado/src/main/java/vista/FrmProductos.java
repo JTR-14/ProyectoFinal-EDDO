@@ -4,12 +4,10 @@
  */
 package vista;
 
-import com.formdev.flatlaf.FlatLightLaf;
 import datos.DALCategoria;
 import datos.DALProductos;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 import modelo.Categoria;
 import modelo.Producto;
@@ -264,6 +262,7 @@ private void llenarTabla() {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
