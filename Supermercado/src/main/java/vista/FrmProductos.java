@@ -100,19 +100,25 @@ private void llenarTabla() {
         datos.setBackground(new java.awt.Color(243, 243, 243));
         datos.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Datos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 14))); // NOI18N
 
+        txtCodigo.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         txtCodigo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Código:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
 
+        txtNombre.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         txtNombre.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Nombre:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
 
+        txtCosto.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         txtCosto.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Precio Costo:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
 
+        txtVenta.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         txtVenta.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Precio Venta:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
 
+        txtStock.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         txtStock.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Stock Actual:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
 
+        txtStockMin.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         txtStockMin.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Stock Minimo:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
 
-        cmbCategoria.setFont(new java.awt.Font("Montserrat Medium", 0, 14)); // NOI18N
+        cmbCategoria.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         cmbCategoria.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Categoría:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
 
         javax.swing.GroupLayout datosLayout = new javax.swing.GroupLayout(datos);
@@ -127,10 +133,10 @@ private void llenarTabla() {
                     .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtStock, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtStockMin, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmbCategoria, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(cmbCategoria, javax.swing.GroupLayout.Alignment.TRAILING, 0, 211, Short.MAX_VALUE)
+                    .addComponent(txtStockMin, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(txtStock, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addGap(71, 71, 71))
         );
         datosLayout.setVerticalGroup(
@@ -163,15 +169,19 @@ private void llenarTabla() {
         jLabel1.setFont(new java.awt.Font("Montserrat Medium", 0, 18)); // NOI18N
         jLabel1.setText("Productos");
 
+        btnGuardar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnGuardar.setText("GUARDAR");
         btnGuardar.addActionListener(this::btnGuardarActionPerformed);
 
+        btnModificar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnModificar.setText("MODIFICAR");
         btnModificar.addActionListener(this::btnModificarActionPerformed);
 
+        btnEliminar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnEliminar.setText("ELIMINAR");
         btnEliminar.addActionListener(this::btnEliminarActionPerformed);
 
+        btnLimpiar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnLimpiar.setText("LIMPIAR");
         btnLimpiar.addActionListener(this::btnLimpiarActionPerformed);
 
@@ -182,9 +192,9 @@ private void llenarTabla() {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(39, 39, 39)
                 .addComponent(btnGuardar)
-                .addGap(55, 55, 55)
+                .addGap(66, 66, 66)
                 .addComponent(btnModificar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 73, Short.MAX_VALUE)
                 .addComponent(btnEliminar)
                 .addGap(57, 57, 57)
                 .addComponent(btnLimpiar)
@@ -225,12 +235,12 @@ private void llenarTabla() {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(73, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addContainerGap(33, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPane1)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(datos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(69, 69, 69))
+                .addGap(47, 47, 47))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(317, 317, 317)
                 .addComponent(jLabel1)
