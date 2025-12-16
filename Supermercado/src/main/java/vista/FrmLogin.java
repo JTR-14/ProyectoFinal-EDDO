@@ -50,7 +50,7 @@ public class FrmLogin extends javax.swing.JFrame {
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setPreferredSize(new java.awt.Dimension(750, 500));
 
-        jLabel1.setFont(new java.awt.Font("Montserrat Medium", 1, 30)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Montserrat ExtraBold", 0, 30)); // NOI18N
         jLabel1.setText("Iniciar Sesión");
 
         jLabel2.setFont(new java.awt.Font("Montserrat Medium", 0, 18)); // NOI18N
@@ -151,7 +151,7 @@ public class FrmLogin extends javax.swing.JFrame {
         Usuario usuario = DALUsuarios.login(username, contrasenia);
         if(usuario != null){
             JOptionPane.showMessageDialog(null, "¡Bienvenido "+usuario.getNombreCompleto(),"Mensaje",1);
-            FrmCategoria principal = new FrmCategoria();
+            FrmClientes principal = new FrmClientes();
             this.dispose();
             principal.setVisible(true);
             
