@@ -5,7 +5,7 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema Supermercado
+-- Schema Supermercado    
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------
@@ -25,6 +25,32 @@ CREATE TABLE IF NOT EXISTS `Supermercado`.`Roles` (
   PRIMARY KEY (`id_rol`))
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `Supermercado`.`Clientes`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Supermercado`.`Clientes` ;
+
+CREATE TABLE IF NOT EXISTS `Supermercado`.`Clientes` (
+  `id_clientes` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nombre_cliente` VARCHAR(100) NOT NULL,
+  `dni_cliente` VARCHAR(20) NOT NULL,
+  `telefono` VARCHAR(20) NULL,
+  `direccion` VARCHAR(200) NULL,
+  PRIMARY KEY (`id_clientes`),
+  UNIQUE INDEX `dni_cliente_UNIQUE` (`dni_cliente` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+-- También necesitas agregar id_cliente a Ventas_Encabezado:
+ALTER TABLE `Supermercado`.`Ventas_Encabezado` 
+ADD COLUMN `id_clientes` INT UNSIGNED NULL AFTER `id_usuarios`,
+ADD INDEX `fk_Ventas_Encabezado_Clientes1_idx` (`id_clientes` ASC) VISIBLE;
+
+ALTER TABLE `Supermercado`.`Ventas_Encabezado` 
+ADD CONSTRAINT `fk_Ventas_Encabezado_Clientes1`
+  FOREIGN KEY (`id_clientes`)
+  REFERENCES `Supermercado`.`Clientes` (`id_clientes`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
 
 -- -----------------------------------------------------
 -- Table `Supermercado`.`Usuarios`
