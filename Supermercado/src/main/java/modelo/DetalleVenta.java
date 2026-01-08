@@ -8,17 +8,18 @@ package modelo;
  *
  * @author Toledo
  */
+
 public class DetalleVenta {
     private int idDetalle;
     private int idVenta;
     private int idProducto;
+    private Producto producto; // Referencia al producto
     private int cantidad;
     private double precioUnitario;
     private double subtotal;
-
-    public DetalleVenta() {
-    }
-
+    
+    public DetalleVenta() {}
+    
     public DetalleVenta(int idVenta, int idProducto, int cantidad, double precioUnitario, double subtotal) {
         this.idVenta = idVenta;
         this.idProducto = idProducto;
@@ -26,68 +27,60 @@ public class DetalleVenta {
         this.precioUnitario = precioUnitario;
         this.subtotal = subtotal;
     }
-
-    public DetalleVenta(int idDetalle, int idVenta, int idProducto, int cantidad, double precioUnitario, double subtotal) {
-        this.idDetalle = idDetalle;
-        this.idVenta = idVenta;
-        this.idProducto = idProducto;
+    
+    public DetalleVenta(Producto producto, int cantidad) {
+        this.producto = producto;
+        this.idProducto = producto.getIdProducto();
         this.cantidad = cantidad;
-        this.precioUnitario = precioUnitario;
-        this.subtotal = subtotal;
+        this.precioUnitario = producto.getPrecioVenta();
+        calcularSubtotal();
     }
-
-    public int getIdDetalle() {
-        return idDetalle;
+    
+    public void calcularSubtotal() {
+        if (producto != null) {
+            this.subtotal = this.cantidad * this.precioUnitario;
+        } else {
+            this.subtotal = this.cantidad * this.precioUnitario;
+        }
     }
-
-    public void setIdDetalle(int idDetalle) {
-        this.idDetalle = idDetalle;
+    
+    // Getters y Setters
+    public int getIdDetalle() { return idDetalle; }
+    public void setIdDetalle(int idDetalle) { this.idDetalle = idDetalle; }
+    
+    public int getIdVenta() { return idVenta; }
+    public void setIdVenta(int idVenta) { this.idVenta = idVenta; }
+    
+    public int getIdProducto() { return idProducto; }
+    public void setIdProducto(int idProducto) { this.idProducto = idProducto; }
+    
+    public Producto getProducto() { return producto; }
+    public void setProducto(Producto producto) { 
+        this.producto = producto; 
+        this.idProducto = producto.getIdProducto();
+        this.precioUnitario = producto.getPrecioVenta();
     }
-
-    public int getIdVenta() {
-        return idVenta;
+    
+    public int getCantidad() { return cantidad; }
+    public void setCantidad(int cantidad) { 
+        this.cantidad = cantidad; 
+        calcularSubtotal();
     }
-
-    public void setIdVenta(int idVenta) {
-        this.idVenta = idVenta;
+    
+    public double getPrecioUnitario() { return precioUnitario; }
+    public void setPrecioUnitario(double precioUnitario) { 
+        this.precioUnitario = precioUnitario; 
+        calcularSubtotal();
     }
-
-    public int getIdProducto() {
-        return idProducto;
-    }
-
-    public void setIdProducto(int idProducto) {
-        this.idProducto = idProducto;
-    }
-
-    public int getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
-    }
-
-    public double getPrecioUnitario() {
-        return precioUnitario;
-    }
-
-    public void setPrecioUnitario(double precioUnitario) {
-        this.precioUnitario = precioUnitario;
-    }
-
-    public double getSubtotal() {
-        return subtotal;
-    }
-
-    public void setSubtotal(double subtotal) {
-        this.subtotal = subtotal;
-    }
-
+    
+    public double getSubtotal() { return subtotal; }
+    public void setSubtotal(double subtotal) { this.subtotal = subtotal; }
+    
     @Override
     public String toString() {
-        return "DetalleVenta{" + "idDetalle=" + idDetalle + ", idVenta=" + idVenta + 
-               ", idProducto=" + idProducto + ", cantidad=" + cantidad + 
-               ", subtotal=" + subtotal + '}';
+        if (producto != null) {
+            return producto.getNombre() + " x" + cantidad + " = S/" + subtotal;
+        }
+        return "Producto ID: " + idProducto + " x" + cantidad + " = S/" + subtotal;
     }
 }

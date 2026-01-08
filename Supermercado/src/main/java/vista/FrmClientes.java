@@ -5,10 +5,13 @@
 package vista;
 
 import datos.DALCliente;
+import java.awt.HeadlessException;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import modelo.Cliente;
+import utiles.GestorSistema;
 
 /**
  *
@@ -17,29 +20,114 @@ import modelo.Cliente;
 public class FrmClientes extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmClientes.class.getName());
+    private GestorSistema gestor;
 
-    /**
-     * Creates new form FrmClientes
-     */
     public FrmClientes() {
         initComponents();
+        gestor = GestorSistema.getInstancia();
         llenarTabla();
     }
     
-    private void llenarTabla(){
-        ArrayList<Cliente> lista = DALCliente.obtenerClientes();
-        DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("ID");
-        modelo.addColumn("Nombre");
-        modelo.addColumn("DNI");
-        modelo.addColumn("Telefono");
-        modelo.addColumn("Direccion");
-        for(int i =0 ; i< lista.size() ; i++){
-            Object fila [] ={lista.get(i).getIdCliente(), lista.get(i).getNombre(), lista.get(i).getDni(),lista.get(i).getTelefono(), lista.get(i).getDireccion()};
-            modelo.addRow(fila);
+    private void llenarTabla() {
+        try {
+            ArrayList<Cliente> lista = DALCliente.obtenerClientes();
+            DefaultTableModel modelo = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Hacer la tabla no editable
+                }
+            };
+            
+            modelo.addColumn("ID");
+            modelo.addColumn("Nombre");
+            modelo.addColumn("DNI");
+            modelo.addColumn("Teléfono");
+            modelo.addColumn("Dirección");
+            
+            for (Cliente cliente : lista) {
+                Object fila[] = {
+                    cliente.getIdCliente(), 
+                    cliente.getNombre(), 
+                    cliente.getDni(),
+                    cliente.getTelefono(), 
+                    cliente.getDireccion()
+                };
+                modelo.addRow(fila);
+            }
+            
+            tblClientes.setModel(modelo);
+            
+            // Ajustar ancho de columnas
+            if (tblClientes.getColumnModel().getColumnCount() > 0) {
+                tblClientes.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
+                tblClientes.getColumnModel().getColumn(1).setPreferredWidth(150); // Nombre
+                tblClientes.getColumnModel().getColumn(2).setPreferredWidth(80);  // DNI
+                tblClientes.getColumnModel().getColumn(3).setPreferredWidth(100); // Teléfono
+                tblClientes.getColumnModel().getColumn(4).setPreferredWidth(200); // Dirección
+            }
+            
+            logger.info("Tabla de clientes cargada con " + lista.size() + " registros");
+            
+        } catch (Exception ex) {
+            logger.severe("Error al llenar tabla: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, 
+                "Error al cargar los clientes: " + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
         }
-        tblClientes.setModel(modelo);
     }
+    
+    private void limpiar() {
+        txtId.setText("");
+        txtNombre.setText("");
+        txtDni.setText("");
+        txtTelefono.setText("");
+        txtDireccion.setText("");
+        txtNombre.requestFocus();
+        
+        // Deseleccionar fila de la tabla
+        tblClientes.clearSelection();
+    }
+    
+    private boolean validarCampos() {
+        nombre = txtNombre.getText().trim();
+        dni = txtDni.getText().trim();
+        telefono = txtTelefono.getText().trim();
+        direccion = txtDireccion.getText().trim();
+        
+        if (nombre.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingrese nombre del cliente", "AVISO", JOptionPane.WARNING_MESSAGE);
+            txtNombre.requestFocus();
+            return false;
+        }
+        
+        if (dni.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingrese DNI del cliente", "AVISO", JOptionPane.WARNING_MESSAGE);
+            txtDni.requestFocus();
+            return false;
+        }
+        
+        if (!dni.matches("\\d{8}")) {
+            JOptionPane.showMessageDialog(this, "El DNI debe tener 8 dígitos", "AVISO", JOptionPane.WARNING_MESSAGE);
+            txtDni.requestFocus();
+            return false;
+        }
+        
+        if (telefono.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingrese teléfono del cliente", "AVISO", JOptionPane.WARNING_MESSAGE);
+            txtTelefono.requestFocus();
+            return false;
+        }
+        
+        if (direccion.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingrese dirección del cliente", "AVISO", JOptionPane.WARNING_MESSAGE);
+            txtDireccion.requestFocus();
+            return false;
+        }
+        
+        return true;
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -62,6 +150,7 @@ public class FrmClientes extends javax.swing.JFrame {
         btnModificar = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
         btnLimpiar = new javax.swing.JButton();
+        btnVolver = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblClientes = new javax.swing.JTable();
 
@@ -93,7 +182,7 @@ public class FrmClientes extends javax.swing.JFrame {
                 .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(txtDni, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 89, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(txtTelefono, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtDireccion, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -132,6 +221,10 @@ public class FrmClientes extends javax.swing.JFrame {
         btnLimpiar.setText("LIMPIAR");
         btnLimpiar.addActionListener(this::btnLimpiarActionPerformed);
 
+        btnVolver.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        btnVolver.setText("VOLVER");
+        btnVolver.addActionListener(this::btnVolverActionPerformed);
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -143,9 +236,11 @@ public class FrmClientes extends javax.swing.JFrame {
                 .addComponent(btnModificar)
                 .addGap(43, 43, 43)
                 .addComponent(btnEliminar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 44, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(btnLimpiar)
-                .addGap(25, 25, 25))
+                .addGap(18, 18, 18)
+                .addComponent(btnVolver)
+                .addContainerGap(38, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -155,7 +250,8 @@ public class FrmClientes extends javax.swing.JFrame {
                     .addComponent(btnGuardar)
                     .addComponent(btnModificar)
                     .addComponent(btnEliminar)
-                    .addComponent(btnLimpiar))
+                    .addComponent(btnLimpiar)
+                    .addComponent(btnVolver))
                 .addGap(21, 21, 21))
         );
 
@@ -181,18 +277,20 @@ public class FrmClientes extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(26, 26, 26)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(datos, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 573, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(22, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addGap(258, 258, 258))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(datos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 573, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 10, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -212,7 +310,9 @@ public class FrmClientes extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -224,117 +324,162 @@ public class FrmClientes extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+        if (!validarCampos()) {
+            return;
+        }
         
-        nombre = txtNombre.getText().trim();
-        dni = txtDni.getText().trim();
-        telefono = txtTelefono.getText().trim();
-        direccion = txtDireccion.getText().trim();
-            if(nombre.isEmpty()){
-                JOptionPane.showMessageDialog(null, "Ingrese nombre de Cliente","AVISO",2);
-                return;
-            }
-            if(dni.isEmpty()){
-                JOptionPane.showMessageDialog(null, "Ingrese DNI de Cliente","AVISO",2);
-                return;
-            }
-            if(telefono.isEmpty()){
-                JOptionPane.showMessageDialog(null, "Ingrese telefono de Cliente","AVISO",2);
-                return;
-            }
-            if(direccion.isEmpty()){
-                JOptionPane.showMessageDialog(null, "Ingrese direccion de Clientes","AVISO",2);
-                return;
-            }
-
-            if(DALCliente.registrarCliente(nombre, dni, telefono, direccion)){
-                JOptionPane.showMessageDialog(null, "Cliente agregado correctamente","MENSAJE",1);
+        try {
+            if (DALCliente.registrarCliente(nombre, dni, telefono, direccion)) {
+                JOptionPane.showMessageDialog(this, 
+                    "Cliente registrado correctamente", 
+                    "Éxito", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                logger.log(Level.INFO, "Cliente registrado: {0} - DNI: {1}", new Object[]{nombre, dni});
                 llenarTabla();
                 limpiar();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "No se pudo registrar el cliente", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
             }
-            else
-            JOptionPane.showMessageDialog(null, "No se pudo agregar al Cliente","ERROR",0);
+        } catch (HeadlessException ex) {
+            logger.log(Level.SEVERE, "Error al registrar cliente: {0}", ex.getMessage());
+            JOptionPane.showMessageDialog(this, 
+                "Error al registrar cliente: " + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarActionPerformed
-
-        nombre = txtNombre.getText().trim();
-        dni = txtDni.getText().trim();
-        telefono = txtTelefono.getText().trim();
-        direccion = txtDireccion.getText().trim();
+        if (txtId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                "Seleccione un cliente de la tabla para modificar", 
+                "Aviso", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         
-            if (txtId.getText().isEmpty()){
-                JOptionPane.showMessageDialog(null, "Seleccione un Cliente de la tabla", "Aviso", 1);
-                return;
-            }
-            if(nombre.isEmpty()){
-                JOptionPane.showMessageDialog(null, "Ingrese nombre de Cliente","AVISO",2);
-                return;
-            }
-            if(dni.isEmpty()){
-                JOptionPane.showMessageDialog(null, "Ingrese DNI de Cliente","AVISO",2);
-                return;
-            }
-            if(telefono.isEmpty()){
-                JOptionPane.showMessageDialog(null, "Ingrese telefono de Cliente","AVISO",2);
-                return;
-            }
-            if(direccion.isEmpty()){
-                JOptionPane.showMessageDialog(null, "Ingrese direccion de Clientes","AVISO",2);
-                return;
-            }
+        if (!validarCampos()) {
+            return;
+        }
+        
+        try {
             id = Integer.parseInt(txtId.getText().trim());
-            if(DALCliente.modificarCliente(id, nombre, dni, telefono, direccion)){
-                JOptionPane.showMessageDialog(null, "Datos de cliente modificado correctamente","MENSAJE",1);
+            
+            if (DALCliente.modificarCliente(id, nombre, dni, telefono, direccion)) {
+                JOptionPane.showMessageDialog(this, 
+                    "Cliente modificado correctamente", 
+                    "Éxito", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                logger.info("Cliente modificado - ID: " + id + " - Nombre: " + nombre);
                 llenarTabla();
                 limpiar();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "No se pudo modificar el cliente", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
             }
-            else
-            JOptionPane.showMessageDialog(null, "Error al Modificar","ERROR",0);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, 
+                "ID de cliente inválido", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            logger.severe("Error al modificar cliente: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, 
+                "Error al modificar cliente: " + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnModificarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         if (txtId.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Seleccione un producto primero");
+            JOptionPane.showMessageDialog(this, 
+                "Seleccione un cliente de la tabla para eliminar", 
+                "Aviso", 
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        int confirm = JOptionPane.showConfirmDialog(this, "¿Eliminar producto?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "¿Está seguro de eliminar este cliente?", 
+            "Confirmar Eliminación", 
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+        
         if (confirm == JOptionPane.YES_OPTION) {
-            id = Integer.parseInt(txtId.getText());
-            if (DALCliente.eliminarCliente(id)) {
-                JOptionPane.showMessageDialog(this, "Eliminado","Mensaje",1);
-                llenarTabla();
-                limpiar();
-            } else {
-                JOptionPane.showMessageDialog(this, "No se pudo eliminar");
+            try {
+                id = Integer.parseInt(txtId.getText());
+                
+                if (DALCliente.eliminarCliente(id)) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Cliente eliminado correctamente", 
+                        "Éxito", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                    logger.info("Cliente eliminado - ID: " + id);
+                    llenarTabla();
+                    limpiar();
+                } else {
+                    JOptionPane.showMessageDialog(this, 
+                        "No se pudo eliminar el cliente (puede tener ventas asociadas)", 
+                        "Error", 
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, 
+                    "ID de cliente inválido", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                logger.severe("Error al eliminar cliente: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, 
+                    "Error al eliminar cliente: " + ex.getMessage(),
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_btnEliminarActionPerformed
-    private void limpiar(){
-        txtId.setText("");
-        txtNombre.setText("");
-        txtDni.setText("");
-        txtTelefono.setText("");
-        txtDireccion.setText("");
-        txtId.requestFocus();
-    }
+
+
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
         limpiar();
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void tblClientesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblClientesMouseClicked
-
         int fila = tblClientes.getSelectedRow();
-
+        
         if (fila >= 0) {
-
-            txtId.setText(tblClientes.getValueAt(fila, 0).toString());
-            txtNombre.setText(tblClientes.getValueAt(fila, 1).toString());
-            txtDni.setText(tblClientes.getValueAt(fila, 2).toString());
-            txtTelefono.setText(tblClientes.getValueAt(fila, 3).toString());
-            txtDireccion.setText(tblClientes.getValueAt(fila, 4).toString());
+            try {
+                txtId.setText(tblClientes.getValueAt(fila, 0).toString());
+                txtNombre.setText(tblClientes.getValueAt(fila, 1).toString());
+                txtDni.setText(tblClientes.getValueAt(fila, 2).toString());
+                txtTelefono.setText(tblClientes.getValueAt(fila, 3).toString());
+                txtDireccion.setText(tblClientes.getValueAt(fila, 4).toString());
+                
+                logger.log(Level.FINE, "Cliente seleccionado - ID: {0}", txtId.getText());
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "Error al cargar datos del cliente seleccionado: {0}", ex.getMessage());
+            }
         }
     }//GEN-LAST:event_tblClientesMouseClicked
+
+    private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+        gestor.getHistorialNavegacion().navegarA("Principal");
+        logger.info("Volviendo al formulario principal");
+        
+        this.dispose();
+        
+        // Volver al principal si hay usuario logueado
+        if (gestor.getUsuarioActual() != null) {
+            java.awt.EventQueue.invokeLater(() -> {
+                new FrmPrincipal(gestor.getUsuarioActual()).setVisible(true);
+            });
+        }
+    }//GEN-LAST:event_btnVolverActionPerformed
 
     /**
      * @param args the command line arguments
@@ -346,6 +491,7 @@ public class FrmClientes extends javax.swing.JFrame {
     private javax.swing.JButton btnGuardar;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnModificar;
+    private javax.swing.JButton btnVolver;
     private javax.swing.JPanel datos;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;

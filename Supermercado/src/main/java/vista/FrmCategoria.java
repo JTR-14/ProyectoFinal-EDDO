@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import modelo.Categoria;
+import utiles.GestorSistema;
 
 /**
  *
@@ -17,12 +18,10 @@ import modelo.Categoria;
 public class FrmCategoria extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmCategoria.class.getName());
-
-    /**
-     * Creates new form FrmCategoria
-     */
+    private GestorSistema gestor;
     public FrmCategoria() {
         initComponents();
+        gestor = GestorSistema.getInstancia();
         llenarTabla();
     }
 
@@ -43,6 +42,7 @@ public class FrmCategoria extends javax.swing.JFrame {
         btnModificar = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
         btnLimpiar = new javax.swing.JButton();
+        btnVolver = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblCategorias = new javax.swing.JTable();
         txtCategorias = new javax.swing.JTextField();
@@ -72,6 +72,10 @@ public class FrmCategoria extends javax.swing.JFrame {
         btnLimpiar.setText("LIMPIAR");
         btnLimpiar.addActionListener(this::btnLimpiarActionPerformed);
 
+        btnVolver.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        btnVolver.setText("VOLVER");
+        btnVolver.addActionListener(this::btnVolverActionPerformed);
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -85,6 +89,8 @@ public class FrmCategoria extends javax.swing.JFrame {
                 .addComponent(btnEliminar)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnLimpiar)
+                .addGap(18, 18, 18)
+                .addComponent(btnVolver)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -95,7 +101,8 @@ public class FrmCategoria extends javax.swing.JFrame {
                     .addComponent(btnGuardar)
                     .addComponent(btnModificar)
                     .addComponent(btnEliminar)
-                    .addComponent(btnLimpiar))
+                    .addComponent(btnLimpiar)
+                    .addComponent(btnVolver))
                 .addGap(21, 21, 21))
         );
 
@@ -128,17 +135,21 @@ public class FrmCategoria extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(19, 19, 19)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(27, 27, 27)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(txtCategorias, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addGap(59, 59, 59)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(27, 27, 27)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addComponent(txtCategorias, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(68, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 494, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -149,9 +160,9 @@ public class FrmCategoria extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(txtCategorias, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(32, 32, 32)
+                .addGap(31, 31, 31)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(28, 28, 28)
+                .addGap(29, 29, 29)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(26, Short.MAX_VALUE))
         );
@@ -170,77 +181,196 @@ public class FrmCategoria extends javax.swing.JFrame {
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
-    private void llenarTabla(){
-        ArrayList<Categoria> lista = DALCategoria.listarCategorias();
-        DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("ID");
-        modelo.addColumn("Categoria");
-        for(int i = 0; i<lista.size(); i++){
-           Object fila[] ={lista.get(i).getIdCategoria(), lista.get(i).getNombre()};
-            modelo.addRow(fila);
-        }
-        tblCategorias.setModel(modelo);
-    }
     
-   private void limpiar(){
-       txtCategorias.setText("");
-       txtCategorias.requestFocus();
-   }
-    
-    private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
-
-            categoria = txtCategorias.getText().trim();
-            if(categoria.isEmpty()){
-                JOptionPane.showMessageDialog(null, "Ingrese categoria de producto","AVISO",2);
-                return;
+    private void llenarTabla() {
+        try {
+            ArrayList<Categoria> lista = DALCategoria.listarCategorias();
+            DefaultTableModel modelo = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Hacer la tabla no editable
+                }
+            };
+            
+            modelo.addColumn("ID");
+            modelo.addColumn("Categoría");
+            
+            for (Categoria cat : lista) {
+                Object fila[] = {cat.getIdCategoria(), cat.getNombre()};
+                modelo.addRow(fila);
             }
             
-            if(DALCategoria.insertarCategoria(categoria)){
-                JOptionPane.showMessageDialog(null, "Producto agregado correctamente","MENSAJE",1);
+            tblCategorias.setModel(modelo);
+            
+            // Ajustar ancho de columnas
+            if (tblCategorias.getColumnModel().getColumnCount() > 0) {
+                tblCategorias.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
+                tblCategorias.getColumnModel().getColumn(1).setPreferredWidth(300); // Categoría
+            }
+            
+            logger.info("Tabla de categorías cargada con " + lista.size() + " registros");
+            
+        } catch (Exception ex) {
+            logger.severe("Error al llenar tabla de categorías: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, 
+                "Error al cargar las categorías: " + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void limpiar() {
+        txtId.setText("");
+        txtCategorias.setText("");
+        txtCategorias.requestFocus();
+        
+        // Deseleccionar fila de la tabla
+        tblCategorias.clearSelection();
+    }
+    
+    private boolean validarCampos() {
+        categoria = txtCategorias.getText().trim();
+        
+        if (categoria.isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                "Ingrese el nombre de la categoría", 
+                "AVISO", 
+                JOptionPane.WARNING_MESSAGE);
+            txtCategorias.requestFocus();
+            return false;
+        }
+        
+        if (categoria.length() < 2) {
+            JOptionPane.showMessageDialog(this, 
+                "El nombre de la categoría debe tener al menos 2 caracteres", 
+                "AVISO", 
+                JOptionPane.WARNING_MESSAGE);
+            txtCategorias.requestFocus();
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+        if (!validarCampos()) {
+            return;
+        }
+        
+        try {
+            if (DALCategoria.insertarCategoria(categoria)) {
+                JOptionPane.showMessageDialog(this, 
+                    "Categoría agregada correctamente", 
+                    "Éxito", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                logger.info("Categoría registrada: " + categoria);
                 llenarTabla();
                 limpiar();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "No se pudo agregar la categoría (puede que ya exista)", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
             }
-            else
-            JOptionPane.showMessageDialog(null, "No se pudo agregar el Producto","ERROR",0);
-
+        } catch (Exception ex) {
+            logger.severe("Error al registrar categoría: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, 
+                "Error al registrar categoría: " + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarActionPerformed
+        if (txtId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                "Seleccione una categoría de la tabla para modificar", 
+                "Aviso", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         
-            if (txtId.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Seleccione un producto de la tabla");
-                return;
-            }
+        if (!validarCampos()) {
+            return;
+        }
+        
+        try {
             idCategoria = Integer.parseInt(txtId.getText());
-            categoria = txtCategorias.getText().trim();
-            if(categoria.isEmpty()){
-                    JOptionPane.showMessageDialog(null, "Ingrese categoria","AVISO",1);
-                    return;
-            }
-            if(DALCategoria.modificarCategoria(idCategoria, categoria)){
-                JOptionPane.showMessageDialog(null, "Producto modificado correctamente","MENSAJE",1);
+            
+            if (DALCategoria.modificarCategoria(idCategoria, categoria)) {
+                JOptionPane.showMessageDialog(this, 
+                    "Categoría modificada correctamente", 
+                    "Éxito", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                logger.info("Categoría modificada - ID: " + idCategoria + " - Nombre: " + categoria);
                 llenarTabla();
                 limpiar();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "No se pudo modificar la categoría", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
             }
-            else
-            JOptionPane.showMessageDialog(null, "Error al Modificar","ERROR",0);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, 
+                "ID de categoría inválido", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            logger.severe("Error al modificar categoría: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, 
+                "Error al modificar categoría: " + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnModificarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         if (txtId.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Seleccione un producto primero");
+            JOptionPane.showMessageDialog(this, 
+                "Seleccione una categoría de la tabla para eliminar", 
+                "Aviso", 
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        int confirm = JOptionPane.showConfirmDialog(this, "¿Eliminar producto?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "¿Está seguro de eliminar esta categoría?\n\n" +
+            "ADVERTENCIA: Si hay productos asociados a esta categoría,\n" +
+            "no podrá ser eliminada hasta que se cambien o eliminen esos productos.", 
+            "Confirmar Eliminación", 
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+        
         if (confirm == JOptionPane.YES_OPTION) {
-            idCategoria = Integer.parseInt(txtId.getText());
-            if (DALCategoria.eliminarCategoria(idCategoria)) {
-                JOptionPane.showMessageDialog(this, "Eliminado","Mensaje",1);
-                llenarTabla();
-                limpiar();
-            } else {
-                JOptionPane.showMessageDialog(this, "No se pudo eliminar (Puede tener ventas)");
+            try {
+                idCategoria = Integer.parseInt(txtId.getText());
+                
+                if (DALCategoria.eliminarCategoria(idCategoria)) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Categoría eliminada correctamente", 
+                        "Éxito", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                    logger.info("Categoría eliminada - ID: " + idCategoria);
+                    llenarTabla();
+                    limpiar();
+                } else {
+                    JOptionPane.showMessageDialog(this, 
+                        "No se pudo eliminar la categoría (puede tener productos asociados)", 
+                        "Error", 
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, 
+                    "ID de categoría inválido", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                logger.severe("Error al eliminar categoría: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, 
+                    "Error al eliminar categoría: " + ex.getMessage(),
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_btnEliminarActionPerformed
@@ -250,19 +380,40 @@ public class FrmCategoria extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void tblCategoriasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblCategoriasMouseClicked
-
         int fila = tblCategorias.getSelectedRow();
-
+        
         if (fila >= 0) {
-
-            txtId.setText(tblCategorias.getValueAt(fila, 0).toString());
-            txtCategorias.setText(tblCategorias.getValueAt(fila, 1).toString());
+            try {
+                txtId.setText(tblCategorias.getValueAt(fila, 0).toString());
+                txtCategorias.setText(tblCategorias.getValueAt(fila, 1).toString());
+                
+                logger.fine("Categoría seleccionada - ID: " + txtId.getText());
+            } catch (Exception ex) {
+                logger.warning("Error al cargar datos de la categoría seleccionada: " + ex.getMessage());
             }
+        }
     }//GEN-LAST:event_tblCategoriasMouseClicked
 
     private void txtCategoriasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCategoriasActionPerformed
-        // TODO add your handling code here:
+        if (!txtCategorias.getText().trim().isEmpty()) {
+            btnGuardarActionPerformed(evt);
+        }
     }//GEN-LAST:event_txtCategoriasActionPerformed
+
+    private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+        gestor.getHistorialNavegacion().navegarA("Principal");
+        logger.info("Volviendo al formulario principal");
+        
+        // Cerrar este formulario
+        this.dispose();
+        
+        // Volver al principal si hay usuario logueado
+        if (gestor.getUsuarioActual() != null) {
+            java.awt.EventQueue.invokeLater(() -> {
+                new FrmPrincipal(gestor.getUsuarioActual()).setVisible(true);
+            });
+        }
+    }//GEN-LAST:event_btnVolverActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -270,6 +421,7 @@ public class FrmCategoria extends javax.swing.JFrame {
     private javax.swing.JButton btnGuardar;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnModificar;
+    private javax.swing.JButton btnVolver;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;

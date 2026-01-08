@@ -16,11 +16,12 @@ import modelo.Categoria;
  *
  * @author Toledo
  */
+
 public class DALCategoria {
 
     public static ArrayList<Categoria> listarCategorias() {
         ArrayList<Categoria> lista = new ArrayList<>();
-        String sql = "SELECT * FROM categorias";
+        String sql = "SELECT * FROM Categorias";
         try (Connection cn = Conexion.realizarConexion(); 
                 PreparedStatement ps = cn.prepareStatement(sql); 
                 ResultSet rs = ps.executeQuery()) {
@@ -30,28 +31,32 @@ public class DALCategoria {
                         rs.getString("nombre_categoria")));
             }
         } catch (ClassNotFoundException | SQLException ex) {
-            System.err.println("Error al insertar producto: " + ex.getMessage());
+            System.err.println("Error al listar categorías: " + ex.getMessage());
+            ex.printStackTrace();
         }
         return lista;
     }
-    public static boolean insertarCategoria(String nombreProducto){
-        if(buscarRepetido(nombreProducto)){
-            JOptionPane.showMessageDialog(null, "Esta categoria ya se encuentra en la Base de Datos", "Mensaje",2);
+    
+    public static boolean insertarCategoria(String nombreCategoria){
+        if(buscarRepetido(nombreCategoria)){
+            JOptionPane.showMessageDialog(null, "Esta categoría ya se encuentra en la Base de Datos", "Mensaje", 2);
             return false;
         }
-        String sql = "INSERT INTO (nombre_categoria) VALUES (?)";
+        String sql = "INSERT INTO Categorias (nombre_categoria) VALUES (?)";
         try(Connection cn = Conexion.realizarConexion();
                 PreparedStatement ps = cn.prepareStatement(sql)){
-                ps.setString(1, nombreProducto);
-                return ps.executeUpdate()>0;
+                ps.setString(1, nombreCategoria);
+                return ps.executeUpdate() > 0;
                 
         }catch (ClassNotFoundException | SQLException ex) {
-            System.err.println("Error al insertar producto: " + ex.getMessage());
+            System.err.println("Error al insertar categoría: " + ex.getMessage());
+            ex.printStackTrace();
             return false;
         }
     }
+    
     public static boolean modificarCategoria(int id, String nombre) {
-        String sql = "UPDATE categorias SET nombre_categoria=? WHERE id_categorias=?";
+        String sql = "UPDATE Categorias SET nombre_categoria=? WHERE id_categorias=?";
 
         try (Connection cn = Conexion.realizarConexion();
              PreparedStatement ps = cn.prepareStatement(sql)) {
@@ -62,12 +67,13 @@ public class DALCategoria {
 
         } catch (ClassNotFoundException | SQLException ex) {
             System.err.println("Error al modificar categoría: " + ex.getMessage());
+            ex.printStackTrace();
             return false;
         }
     }
 
     public static boolean eliminarCategoria(int id) {
-        String sql = "DELETE FROM categorias WHERE id_categorias=?";
+        String sql = "DELETE FROM Categorias WHERE id_categorias=?";
 
         try (Connection cn = Conexion.realizarConexion();
              PreparedStatement ps = cn.prepareStatement(sql)) {
@@ -77,21 +83,22 @@ public class DALCategoria {
 
         } catch (ClassNotFoundException | SQLException ex) {
             System.err.println("Error al eliminar categoría: " + ex.getMessage());
+            ex.printStackTrace();
             return false;
         }
     }
     
     private static boolean buscarRepetido(String categoria){
-        String sql = "SELECT nombre_categoria FROM categorias WHERE nombre_categoria = ?";
+        String sql = "SELECT nombre_categoria FROM Categorias WHERE nombre_categoria = ?";
         try(Connection cn = Conexion.realizarConexion();
-                PreparedStatement ps = cn.prepareStatement(sql);
-                ){
+                PreparedStatement ps = cn.prepareStatement(sql)){
             ps.setString(1, categoria);
             try(ResultSet rs = ps.executeQuery()){
                 return rs.next();
             }
         } catch (ClassNotFoundException | SQLException ex) {
-            System.err.println("Error al eliminar categoría: " + ex.getMessage());
+            System.err.println("Error al buscar categoría repetida: " + ex.getMessage());
+            ex.printStackTrace();
             return false;
         }
     }

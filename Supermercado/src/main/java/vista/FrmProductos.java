@@ -11,6 +11,7 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import modelo.Categoria;
 import modelo.Producto;
+import utiles.GestorSistema;
 
 /**
  *
@@ -19,56 +20,249 @@ import modelo.Producto;
 public class FrmProductos extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmProductos.class.getName());
+    private GestorSistema gestor;
+    private int idProducto, stockActual, stockMinimo, idCategoria;
+    private String codigo, nombre;
+    private double precioCosto, precioVenta;
+    private double precioVentaAnterior; // Para registrar cambios de precio
 
-    /**
-     * Creates new form FrmProductos
-     */
     public FrmProductos() {
         initComponents();
+        gestor = GestorSistema.getInstancia();
         llenarTabla();
         cargarCombo();
     }
 
-private void llenarTabla() {
-
-        ArrayList<Producto> lista = DALProductos.obtenerProductos();
-        
-        DefaultTableModel modelo = new DefaultTableModel();
-        
-        modelo.addColumn("ID");          
-        modelo.addColumn("Código");      
-        modelo.addColumn("Nombre");      
-        modelo.addColumn("P. Costo");    
-        modelo.addColumn("P. Venta");    
-        modelo.addColumn("Stock");       
-        modelo.addColumn("Stock Min");      
-        modelo.addColumn("ID Categoria");      
-
-        for (int i = 0; i < lista.size(); i++) {
-            Object[] fila = {
-                lista.get(i).getIdProducto(),
-                lista.get(i).getCodigo(),
-                lista.get(i).getNombre(),
-                lista.get(i).getPrecioCosto(),
-                lista.get(i).getPrecioVenta(),
-                lista.get(i).getStockActual(),
-                lista.get(i).getStockMinimo(),
-                lista.get(i).getIdCategoria()
+    private void llenarTabla() {
+        try {
+            ArrayList<Producto> lista = DALProductos.obtenerProductos();
+            DefaultTableModel modelo = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Hacer la tabla no editable
+                }
             };
-            modelo.addRow(fila);
+            
+            modelo.addColumn("ID");          
+            modelo.addColumn("Código");      
+            modelo.addColumn("Nombre");      
+            modelo.addColumn("P. Costo");    
+            modelo.addColumn("P. Venta");    
+            modelo.addColumn("Stock");       
+            modelo.addColumn("Stock Min");      
+            modelo.addColumn("Categoría");  // Cambiado para mostrar nombre en lugar de ID
+
+            for (Producto producto : lista) {
+                // Obtener nombre de categoría
+                String nombreCategoria = obtenerNombreCategoria(producto.getIdCategoria());
+                
+                Object[] fila = {
+                    producto.getIdProducto(),
+                    producto.getCodigo(),
+                    producto.getNombre(),
+                    String.format("S/ %.2f", producto.getPrecioCosto()),
+                    String.format("S/ %.2f", producto.getPrecioVenta()),
+                    producto.getStockActual(),
+                    producto.getStockMinimo(),
+                    nombreCategoria
+                };
+                modelo.addRow(fila);
+            }
+            
+            tblProductos.setModel(modelo);
+            
+            // Ajustar ancho de columnas
+            if (tblProductos.getColumnModel().getColumnCount() > 0) {
+                tblProductos.getColumnModel().getColumn(0).setPreferredWidth(50);   // ID
+                tblProductos.getColumnModel().getColumn(1).setPreferredWidth(100);  // Código
+                tblProductos.getColumnModel().getColumn(2).setPreferredWidth(150);  // Nombre
+                tblProductos.getColumnModel().getColumn(3).setPreferredWidth(80);   // P. Costo
+                tblProductos.getColumnModel().getColumn(4).setPreferredWidth(80);   // P. Venta
+                tblProductos.getColumnModel().getColumn(5).setPreferredWidth(60);   // Stock
+                tblProductos.getColumnModel().getColumn(6).setPreferredWidth(80);   // Stock Min
+                tblProductos.getColumnModel().getColumn(7).setPreferredWidth(120);  // Categoría
+            }
+            
+            logger.info("Tabla de productos cargada con " + lista.size() + " registros");
+            
+        } catch (Exception ex) {
+            logger.severe("Error al llenar tabla de productos: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, 
+                "Error al cargar los productos: " + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
         }
-        
-        tblProductos.setModel(modelo);
+    }
+    
+    private String obtenerNombreCategoria(int idCategoria) {
+        try {
+            ArrayList<Categoria> categorias = DALCategoria.listarCategorias();
+            for (Categoria cat : categorias) {
+                if (cat.getIdCategoria() == idCategoria) {
+                    return cat.getNombre();
+                }
+            }
+        } catch (Exception ex) {
+            logger.warning("Error al obtener nombre de categoría: " + ex.getMessage());
+        }
+        return "Desconocida";
     }
 
     private void cargarCombo() {
-        cmbCategoria.removeAllItems();
-        cmbCategoria.addItem(new Categoria("-Seleccione-"));
-        ArrayList<Categoria> lista = DALCategoria.listarCategorias();
-        for (Categoria c : lista) {
-            cmbCategoria.addItem(c);
+        try {
+            cmbCategoria.removeAllItems();
+            cmbCategoria.addItem(new Categoria(0, "-Seleccione Categoría-"));
+            ArrayList<Categoria> lista = DALCategoria.listarCategorias();
+            for (Categoria c : lista) {
+                cmbCategoria.addItem(c);
+            }
+            logger.info("Combo de categorías cargado con " + lista.size() + " elementos");
+        } catch (Exception ex) {
+            logger.severe("Error al cargar combo de categorías: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, 
+                "Error al cargar categorías: " + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    private void registrarCambioPrecio(double precioAnterior, double precioNuevo, String motivo) {
+        if (precioAnterior != precioNuevo) {
+            Producto producto = new Producto();
+            producto.setIdProducto(idProducto);
+            producto.setNombre(nombre);
+            producto.setPrecioVenta(precioNuevo);
+            
+            // Registrar en el historial de precios (PILA LIFO)
+            gestor.getHistorialPrecios().registrarCambioPrecio(
+                producto, precioAnterior, precioNuevo, motivo
+            );
+            
+            logger.info("Cambio de precio registrado - Producto ID: " + idProducto + 
+                       " - De: S/" + precioAnterior + " a S/" + precioNuevo + 
+                       " - Motivo: " + motivo);
+            
+            // Mostrar notificación si está habilitado
+            if ((Boolean)gestor.getConfiguracion("mostrar_historial")) {
+                JOptionPane.showMessageDialog(this, 
+                    "Cambio de precio registrado en historial:\n" +
+                    "Producto: " + nombre + "\n" +
+                    "Precio anterior: S/" + String.format("%.2f", precioAnterior) + "\n" +
+                    "Precio nuevo: S/" + String.format("%.2f", precioNuevo) + "\n" +
+                    "Motivo: " + motivo,
+                    "Historial Actualizado", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    }
+    
+    private void limpiar() {
+        txtId.setText("");
+        txtCodigo.setText("");
+        txtNombre.setText("");
+        txtCosto.setText("");
+        txtVenta.setText("");
+        txtStock.setText("");
+        txtStockMin.setText("");
+        cmbCategoria.setSelectedIndex(0);
+        txtCodigo.requestFocus();
+        
+        // Deseleccionar fila de la tabla
+        tblProductos.clearSelection();
+        
+        // Resetear precio anterior
+        precioVentaAnterior = 0;
+        
+        logger.fine("Campos del formulario limpiados");
+    }
+    
+    private boolean validarCampos() {
+        // Validar campos obligatorios
+        if (txtCodigo.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingrese código del producto", "AVISO", JOptionPane.WARNING_MESSAGE);
+            txtCodigo.requestFocus();
+            return false;
+        }
+        
+        if (txtNombre.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingrese nombre del producto", "AVISO", JOptionPane.WARNING_MESSAGE);
+            txtNombre.requestFocus();
+            return false;
+        }
+        
+        // Validar campos numéricos
+        try {
+            precioCosto = Double.parseDouble(txtCosto.getText().trim());
+            if (precioCosto <= 0) {
+                JOptionPane.showMessageDialog(this, "El precio de costo debe ser mayor a 0", "AVISO", JOptionPane.WARNING_MESSAGE);
+                txtCosto.requestFocus();
+                return false;
+            }
+            
+            precioVenta = Double.parseDouble(txtVenta.getText().trim());
+            if (precioVenta <= 0) {
+                JOptionPane.showMessageDialog(this, "El precio de venta debe ser mayor a 0", "AVISO", JOptionPane.WARNING_MESSAGE);
+                txtVenta.requestFocus();
+                return false;
+            }
+            
+            // Validar que precio de venta sea mayor o igual al costo
+            if (precioVenta < precioCosto) {
+                int respuesta = JOptionPane.showConfirmDialog(this, 
+                    "El precio de venta es menor al precio de costo.\n" +
+                    "¿Desea continuar de todas formas?",
+                    "Confirmación",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+                if (respuesta != JOptionPane.YES_OPTION) {
+                    txtVenta.requestFocus();
+                    return false;
+                }
+            }
+            
+            stockActual = Integer.parseInt(txtStock.getText().trim());
+            if (stockActual < 0) {
+                JOptionPane.showMessageDialog(this, "El stock no puede ser negativo", "AVISO", JOptionPane.WARNING_MESSAGE);
+                txtStock.requestFocus();
+                return false;
+            }
+            
+            stockMinimo = Integer.parseInt(txtStockMin.getText().trim());
+            if (stockMinimo < 0) {
+                JOptionPane.showMessageDialog(this, "El stock mínimo no puede ser negativo", "AVISO", JOptionPane.WARNING_MESSAGE);
+                txtStockMin.requestFocus();
+                return false;
+            }
+            
+            // Validar categoría seleccionada
+            if (cmbCategoria.getSelectedIndex() == 0) {
+                JOptionPane.showMessageDialog(this, "Seleccione categoría del producto", "AVISO", JOptionPane.WARNING_MESSAGE);
+                cmbCategoria.requestFocus();
+                return false;
+            }
+            
+            // Guardar otros datos
+            codigo = txtCodigo.getText().trim();
+            nombre = txtNombre.getText().trim();
+            Categoria categoria = (Categoria) cmbCategoria.getSelectedItem();
+            this.idCategoria = categoria.getIdCategoria();
+            
+            return true;
+            
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, 
+                "Revise los campos numéricos:\n" +
+                "- Precio costo\n" +
+                "- Precio venta\n" +
+                "- Stock actual\n" +
+                "- Stock mínimo\n\n" +
+                "Deben ser valores numéricos válidos.",
+                "Error en datos numéricos", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -89,6 +283,7 @@ private void llenarTabla() {
         btnModificar = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
         btnLimpiar = new javax.swing.JButton();
+        btnVolver = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblProductos = new javax.swing.JTable();
 
@@ -185,6 +380,10 @@ private void llenarTabla() {
         btnLimpiar.setText("LIMPIAR");
         btnLimpiar.addActionListener(this::btnLimpiarActionPerformed);
 
+        btnVolver.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        btnVolver.setText("VOLVER");
+        btnVolver.addActionListener(this::btnVolverActionPerformed);
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -192,13 +391,15 @@ private void llenarTabla() {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(39, 39, 39)
                 .addComponent(btnGuardar)
-                .addGap(66, 66, 66)
+                .addGap(18, 18, 18)
                 .addComponent(btnModificar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 73, Short.MAX_VALUE)
+                .addGap(38, 38, 38)
                 .addComponent(btnEliminar)
-                .addGap(57, 57, 57)
+                .addGap(32, 32, 32)
                 .addComponent(btnLimpiar)
-                .addGap(40, 40, 40))
+                .addGap(26, 26, 26)
+                .addComponent(btnVolver)
+                .addContainerGap(42, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -208,7 +409,8 @@ private void llenarTabla() {
                     .addComponent(btnGuardar)
                     .addComponent(btnModificar)
                     .addComponent(btnEliminar)
-                    .addComponent(btnLimpiar))
+                    .addComponent(btnLimpiar)
+                    .addComponent(btnVolver))
                 .addGap(21, 21, 21))
         );
 
@@ -281,175 +483,207 @@ private void llenarTabla() {
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
-       try{ 
-
-        if(txtCodigo.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese codigo de producto","AVISO",2);
+        if (!validarCampos()) {
             return;
         }
-        if(txtNombre.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese nombre de producto","AVISO",2);
-            return;
-        }
-        if(txtCosto.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese precio de costo del producto","AVISO",2);
-            return;
-        }
-        if(txtVenta.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese precio de venta del producto","AVISO",2);
-            return;
-        }
-        if(txtStock.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese stock del producto","AVISO",2);
-            return;
-        }
-        if(txtStockMin.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese stock minimo del producto","AVISO",2);
-            return;
-        }
-        if(cmbCategoria.getSelectedIndex() == 0){
-            JOptionPane.showMessageDialog(null, "Seleccione categoria del Producto","AVISO",2);
-            return;
-        }
-        codigo = txtCodigo.getText().trim();
-        nombre = txtNombre.getText().trim();
-        precioCosto = Double.parseDouble(txtCosto.getText().trim());
-        precioVenta = Double.parseDouble(txtVenta.getText().trim());
-        stockActual = Integer.parseInt(txtStock.getText().trim());
-        stockMinimo = Integer.parseInt(txtStockMin.getText().trim());
-        Categoria categoria = (Categoria) cmbCategoria.getSelectedItem();
-        this.idCategoria = categoria.getIdCategoria();
         
-       if(DALProductos.insertarProducto(codigo, nombre, precioCosto, precioVenta, stockActual, stockMinimo, idCategoria)){
-           JOptionPane.showMessageDialog(null, "Producto agregado correctamente","MENSAJE",1);
-            llenarTabla();
-            limpiar();
-       }
-       else
-           JOptionPane.showMessageDialog(null, "No se pudo agregar el Producto","ERROR",0);
-       }catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Revise los campos numéricos");
+        try {
+            if (DALProductos.insertarProducto(codigo, nombre, precioCosto, precioVenta, 
+                                              stockActual, stockMinimo, idCategoria)) {
+                JOptionPane.showMessageDialog(this, 
+                    "Producto registrado correctamente", 
+                    "Éxito", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                logger.info("Producto registrado - Código: " + codigo + " - Nombre: " + nombre);
+                llenarTabla();
+                limpiar();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "No se pudo registrar el producto (puede que el código ya exista)", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception ex) {
+            logger.severe("Error al registrar producto: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, 
+                "Error al registrar producto: " + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarActionPerformed
-      try{ 
         if (txtId.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Seleccione un producto de la tabla");
-        return;
-         }
-        if(txtCodigo.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese codigo de producto","AVISO",2);
+            JOptionPane.showMessageDialog(this, 
+                "Seleccione un producto de la tabla para modificar", 
+                "Aviso", 
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
-        if(txtNombre.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese nombre de producto","AVISO",2);
-            return;
-        }
-        if(txtCosto.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese precio de costo del producto","AVISO",2);
-            return;
-        }
-        if(txtVenta.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese precio de venta del producto","AVISO",2);
-            return;
-        }
-        if(txtStock.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese stock del producto","AVISO",2);
-            return;
-        }
-        if(txtStockMin.getText().trim().isEmpty()){
-            JOptionPane.showMessageDialog(null, "Ingrese stock minimo del producto","AVISO",2);
-            return;
-        }
-        if(cmbCategoria.getSelectedIndex() == 0){
-            JOptionPane.showMessageDialog(null, "Seleccione categoria del Producto","AVISO",2);
-            return;
-        }
-        idProducto = Integer.parseInt(txtId.getText());
-        codigo = txtCodigo.getText().trim();
-        nombre = txtNombre.getText().trim();
-        precioCosto = Double.parseDouble(txtCosto.getText().trim());
-        precioVenta = Double.parseDouble(txtVenta.getText().trim());
-        stockActual = Integer.parseInt(txtStock.getText().trim());
-        stockMinimo = Integer.parseInt(txtStockMin.getText().trim());
-        Categoria categoria = (Categoria) cmbCategoria.getSelectedItem();
-        this.idCategoria = categoria.getIdCategoria();
         
-       if(DALProductos.modificarProducto(idProducto, codigo, nombre, precioCosto, precioVenta, stockActual, stockMinimo, idCategoria)){
-           JOptionPane.showMessageDialog(null, "Producto modificado correctamente","MENSAJE",1);
-            llenarTabla();
-            limpiar();
-       }
-       else
-           JOptionPane.showMessageDialog(null, "Error al Modificar","ERROR",0);
+        // Guardar precio anterior antes de validar
+        try {
+            precioVentaAnterior = Double.parseDouble(txtVenta.getText().trim());
+        } catch (NumberFormatException e) {
+            precioVentaAnterior = 0;
+        }
         
-         }catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Revise los campos numéricos");
+        if (!validarCampos()) {
+            return;
+        }
+        
+        try {
+            idProducto = Integer.parseInt(txtId.getText());
+            
+            // Registrar cambio de precio si aplica
+            if (precioVenta != precioVentaAnterior && precioVentaAnterior > 0) {
+                registrarCambioPrecio(precioVentaAnterior, precioVenta, "Modificación manual");
+            }
+            
+            if (DALProductos.modificarProducto(idProducto, codigo, nombre, precioCosto, 
+                                              precioVenta, stockActual, stockMinimo, idCategoria)) {
+                JOptionPane.showMessageDialog(this, 
+                    "Producto modificado correctamente", 
+                    "Éxito", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                logger.info("Producto modificado - ID: " + idProducto + " - Nombre: " + nombre);
+                llenarTabla();
+                limpiar();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "No se pudo modificar el producto", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, 
+                "ID de producto inválido", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            logger.severe("Error al modificar producto: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, 
+                "Error al modificar producto: " + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnModificarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         if (txtId.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Seleccione un producto primero");
+            JOptionPane.showMessageDialog(this, 
+                "Seleccione un producto de la tabla para eliminar", 
+                "Aviso", 
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
         
-        int confirm = JOptionPane.showConfirmDialog(this, "¿Eliminar producto?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "¿Está seguro de eliminar este producto?\n\n" +
+            "ADVERTENCIA: Si hay ventas asociadas a este producto,\n" +
+            "no podrá ser eliminado.", 
+            "Confirmar Eliminación", 
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+        
         if (confirm == JOptionPane.YES_OPTION) {
-            idProducto = Integer.parseInt(txtId.getText());
-            if (DALProductos.eliminarProducto(idProducto)) {
-                JOptionPane.showMessageDialog(this, "Eliminado","Mensaje",1);
-                llenarTabla();
-                limpiar();
-            } else {
-                JOptionPane.showMessageDialog(this, "No se pudo eliminar (Puede tener ventas)");
+            try {
+                idProducto = Integer.parseInt(txtId.getText());
+                
+                if (DALProductos.eliminarProducto(idProducto)) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Producto eliminado correctamente", 
+                        "Éxito", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                    logger.info("Producto eliminado - ID: " + idProducto);
+                    llenarTabla();
+                    limpiar();
+                } else {
+                    JOptionPane.showMessageDialog(this, 
+                        "No se pudo eliminar el producto (puede tener ventas asociadas)", 
+                        "Error", 
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, 
+                    "ID de producto inválido", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                logger.severe("Error al eliminar producto: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, 
+                    "Error al eliminar producto: " + ex.getMessage(),
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void tblProductosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblProductosMouseClicked
-        
         int fila = tblProductos.getSelectedRow();
         
         if (fila >= 0) {
-
-            txtId.setText(tblProductos.getValueAt(fila, 0).toString());
-            txtCodigo.setText(tblProductos.getValueAt(fila, 1).toString());
-            txtNombre.setText(tblProductos.getValueAt(fila, 2).toString());
-            txtCosto.setText(tblProductos.getValueAt(fila, 3).toString());
-            txtVenta.setText(tblProductos.getValueAt(fila, 4).toString());
-            txtStock.setText(tblProductos.getValueAt(fila, 5).toString());
-            txtStockMin.setText(tblProductos.getValueAt(fila, 6).toString());
-            
-            int idCategoria = Integer.parseInt(tblProductos.getValueAt(fila, 7).toString());
-            
-            for (int i = 0; i < cmbCategoria.getItemCount(); i++) {
-                Categoria item = cmbCategoria.getItemAt(i);
-                if (item.getIdCategoria() == idCategoria) {
-                    cmbCategoria.setSelectedIndex(i);
-                    break;
+            try {
+                txtId.setText(tblProductos.getValueAt(fila, 0).toString());
+                txtCodigo.setText(tblProductos.getValueAt(fila, 1).toString());
+                txtNombre.setText(tblProductos.getValueAt(fila, 2).toString());
+                
+                // Limpiar el símbolo "S/" y espacios antes de asignar
+                String precioCostoStr = tblProductos.getValueAt(fila, 3).toString().replace("S/", "").trim();
+                String precioVentaStr = tblProductos.getValueAt(fila, 4).toString().replace("S/", "").trim();
+                
+                txtCosto.setText(precioCostoStr);
+                txtVenta.setText(precioVentaStr);
+                txtStock.setText(tblProductos.getValueAt(fila, 5).toString());
+                txtStockMin.setText(tblProductos.getValueAt(fila, 6).toString());
+                
+                // Guardar precio anterior para comparación
+                precioVentaAnterior = Double.parseDouble(precioVentaStr);
+                
+                // Buscar y seleccionar la categoría correcta
+                String nombreCategoria = tblProductos.getValueAt(fila, 7).toString();
+                for (int i = 0; i < cmbCategoria.getItemCount(); i++) {
+                    Categoria item = cmbCategoria.getItemAt(i);
+                    if (item.getNombre().equals(nombreCategoria)) {
+                        cmbCategoria.setSelectedIndex(i);
+                        break;
+                    }
                 }
+                
+                logger.fine("Producto seleccionado - ID: " + txtId.getText() + " - Nombre: " + txtNombre.getText());
+                
+            } catch (Exception ex) {
+                logger.warning("Error al cargar datos del producto seleccionado: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, 
+                    "Error al cargar datos del producto: " + ex.getMessage(),
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_tblProductosMouseClicked
-    private void limpiar(){
-        txtId.setText("");
-        txtCodigo.setText("");
-        txtNombre.setText("");
-        txtCosto.setText("");
-        txtVenta.setText("");
-        txtStock.setText("");
-        txtStockMin.setText("");
-        cmbCategoria.setSelectedIndex(0);
-        txtCodigo.requestFocus();
-    }
+
+    private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+        gestor.getHistorialNavegacion().navegarA("Principal");
+        logger.info("Volviendo al formulario principal");
+        
+        // Cerrar este formulario
+        this.dispose();
+        
+        // Volver al principal si hay usuario logueado
+        if (gestor.getUsuarioActual() != null) {
+            java.awt.EventQueue.invokeLater(() -> {
+                new FrmPrincipal(gestor.getUsuarioActual()).setVisible(true);
+            });
+        }
+    }//GEN-LAST:event_btnVolverActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEliminar;
     private javax.swing.JButton btnGuardar;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnModificar;
+    private javax.swing.JButton btnVolver;
     private javax.swing.JComboBox<Categoria> cmbCategoria;
     private javax.swing.JPanel datos;
     private javax.swing.JLabel jLabel1;
@@ -465,7 +699,5 @@ private void llenarTabla() {
     private javax.swing.JTextField txtStockMin;
     private javax.swing.JTextField txtVenta;
     // End of variables declaration//GEN-END:variables
-    private int idProducto, stockActual, stockMinimo,idCategoria;
-    private String codigo, nombre;
-    private double precioCosto, precioVenta;
+
 }
