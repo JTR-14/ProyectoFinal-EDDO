@@ -7,7 +7,6 @@ package vista;
 import datos.DALCategoria;
 import java.awt.Window;
 import java.util.ArrayList;
-import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import modelo.Categoria;
@@ -18,6 +17,8 @@ import utiles.GestorSistema;
  * @author Toledo
  */
 public class FrmCategoria extends javax.swing.JFrame {
+    
+    private FrmPrincipal principal;
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmCategoria.class.getName());
     private GestorSistema gestor;
@@ -190,7 +191,7 @@ public class FrmCategoria extends javax.swing.JFrame {
             DefaultTableModel modelo = new DefaultTableModel() {
                 @Override
                 public boolean isCellEditable(int row, int column) {
-                    return false; // Hacer la tabla no editable
+                    return false; 
                 }
             };
             
@@ -204,10 +205,10 @@ public class FrmCategoria extends javax.swing.JFrame {
             
             tblCategorias.setModel(modelo);
             
-            // Ajustar ancho de columnas
+
             if (tblCategorias.getColumnModel().getColumnCount() > 0) {
-                tblCategorias.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
-                tblCategorias.getColumnModel().getColumn(1).setPreferredWidth(300); // Categoría
+                tblCategorias.getColumnModel().getColumn(0).setPreferredWidth(50);  
+                tblCategorias.getColumnModel().getColumn(1).setPreferredWidth(300); 
             }
             
             logger.info("Tabla de categorías cargada con " + lista.size() + " registros");
@@ -225,8 +226,7 @@ public class FrmCategoria extends javax.swing.JFrame {
         txtId.setText("");
         txtCategorias.setText("");
         txtCategorias.requestFocus();
-        
-        // Deseleccionar fila de la tabla
+
         tblCategorias.clearSelection();
     }
     
@@ -282,7 +282,11 @@ public class FrmCategoria extends javax.swing.JFrame {
                 JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnGuardarActionPerformed
-
+ 
+    public void setPrincipal(FrmPrincipal principal){
+     this.principal = principal;
+ }
+ 
     private void btnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarActionPerformed
         if (txtId.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, 
@@ -405,22 +409,13 @@ public class FrmCategoria extends javax.swing.JFrame {
     private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
         gestor.getHistorialNavegacion().navegarA("Principal");
         logger.info("Volviendo al formulario principal");
+
+        if (principal != null) {
+            principal.setVisible(true);
+            principal.toFront();
+        }
         
-        // Simplemente cerrar este formulario
-        // NO abrir un nuevo FrmPrincipal
-        this.dispose();
-        
-        // Si realmente necesitas asegurarte de que el principal esté visible,
-        // puedes usar esta lógica:
-        java.awt.EventQueue.invokeLater(() -> {
-            for (Window window : Window.getWindows()) {
-                if (window instanceof FrmPrincipal) {
-                    window.setVisible(true);
-                    window.toFront();
-                    break;
-                }
-            }
-        });
+        this.setVisible(false);
     }//GEN-LAST:event_btnVolverActionPerformed
 
 

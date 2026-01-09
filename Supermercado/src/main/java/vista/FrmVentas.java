@@ -25,6 +25,7 @@ public class FrmVentas extends javax.swing.JFrame {
     private ArrayList<Cliente> listaClientes;
     private int idUsuarioActual;
     private Cliente clienteSeleccionado;
+    private FrmPrincipal principal;
     
     public FrmVentas() {
         initComponents();
@@ -52,7 +53,9 @@ public class FrmVentas extends javax.swing.JFrame {
         
         txtCodigo.requestFocus();
     }
-    
+    public void setPrincipal(FrmPrincipal principal){
+        this.principal = principal;
+    }
     private void inicializarTablaDetalles() {
         modeloDetalles = new DefaultTableModel() {
             @Override
@@ -121,7 +124,7 @@ public class FrmVentas extends javax.swing.JFrame {
             cmbCliente.setEnabled(false);
         }
     }
-    
+
     private void actualizarNumeroVenta() {
         try {
             int siguienteNumero = DALVentas.obtenerSiguienteNumeroVenta();
@@ -654,6 +657,7 @@ public class FrmVentas extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCancelarActionPerformed
 
     private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+
         if (!ventaActual.getDetalles().isEmpty()) {
             int confirm = JOptionPane.showConfirmDialog(this,
                 "Hay productos en la venta actual.\n" +
@@ -664,41 +668,20 @@ public class FrmVentas extends javax.swing.JFrame {
             
             if (confirm != JOptionPane.YES_OPTION) {
                 return;
+            } else {
+               cancelarVenta(); 
             }
         }
         
-        // Registrar navegación de regreso
         gestor.getHistorialNavegacion().navegarA("Principal");
         logger.info("Volviendo al formulario principal desde Ventas");
         
-        // Cerrar este formulario
-        this.dispose();
-        
-        // Buscar si ya hay una instancia de FrmPrincipal abierta
-        // Si la encuentra, la trae al frente en lugar de crear una nueva
-        java.awt.EventQueue.invokeLater(() -> {
-            boolean principalEncontrado = false;
-            Window[] windows = Window.getWindows();
-            
-            for (Window window : windows) {
-                if (window instanceof FrmPrincipal && window.isVisible()) {
-                    // Ya hay una instancia abierta, traerla al frente
-                    window.setVisible(true);
-                    window.toFront();
-                    window.requestFocus();
-                    principalEncontrado = true;
-                    logger.info("FrmPrincipal encontrado y traído al frente desde Ventas");
-                    break;
-                }
-            }
-            
-            // Si no se encontró ninguna instancia abierta de FrmPrincipal
-            // y hay un usuario logueado, crear una nueva (solo en este caso)
-            if (!principalEncontrado && gestor.getUsuarioActual() != null) {
-                logger.info("Creando nueva instancia de FrmPrincipal desde Ventas (no se encontró una abierta)");
-                new FrmPrincipal(gestor.getUsuarioActual()).setVisible(true);
-            }
-        });
+        if (principal != null) {
+            principal.setVisible(true); 
+            principal.toFront();
+        }
+
+        this.setVisible(false);
     }//GEN-LAST:event_btnVolverActionPerformed
 
     private void tblDetallesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblDetallesMouseClicked

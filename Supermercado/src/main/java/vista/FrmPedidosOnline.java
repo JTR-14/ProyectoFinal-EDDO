@@ -5,7 +5,6 @@
 package vista;
 
 import datos.*;
-import java.awt.Window;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -23,6 +22,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
     private DefaultTableModel modeloDetalles;
     private DefaultTableModel modeloCola;
     private ArrayList<Cliente> listaClientes;
+    private FrmPrincipal principal;
     
     public FrmPedidosOnline() {
         initComponents();
@@ -833,8 +833,11 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
     private void tblDetallesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblDetallesMouseClicked
         
     }//GEN-LAST:event_tblDetallesMouseClicked
-
+    public void setPrincipal(FrmPrincipal principal){
+        this.principal = principal;
+    }
     private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+       // 1. Validación de seguridad (Mantenemos tu lógica original)
         if (!pedidoActual.getDetalles().isEmpty()) {
             int confirm = JOptionPane.showConfirmDialog(this,
                 "Hay productos en el pedido actual.\n" +
@@ -844,42 +847,22 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
                 JOptionPane.WARNING_MESSAGE);
             
             if (confirm != JOptionPane.YES_OPTION) {
-                return;
+                return; // Se queda aquí si dice que NO
             }
         }
         
-        // Registrar navegación de regreso
+        // 2. Logs y Gestor
         gestor.getHistorialNavegacion().navegarA("Principal");
         logger.info("Volviendo al formulario principal desde Pedidos Online");
         
-        // Cerrar este formulario
-        this.dispose();
+        // 3. Regresar al Principal usando la referencia directa
+        if (principal != null) {
+            principal.setVisible(true);
+            principal.toFront();
+        }
         
-        // Buscar si ya hay una instancia de FrmPrincipal abierta
-        // Si la encuentra, la trae al frente en lugar de crear una nueva
-        java.awt.EventQueue.invokeLater(() -> {
-            boolean principalEncontrado = false;
-            Window[] windows = Window.getWindows();
-            
-            for (Window window : windows) {
-                if (window instanceof FrmPrincipal && window.isVisible()) {
-                    // Ya hay una instancia abierta, traerla al frente
-                    window.setVisible(true);
-                    window.toFront();
-                    window.requestFocus();
-                    principalEncontrado = true;
-                    logger.info("FrmPrincipal encontrado y traído al frente");
-                    break;
-                }
-            }
-            
-            // Si no se encontró ninguna instancia abierta de FrmPrincipal
-            // y hay un usuario logueado, crear una nueva (solo en este caso)
-            if (!principalEncontrado && gestor.getUsuarioActual() != null) {
-                logger.info("Creando nueva instancia de FrmPrincipal (no se encontró una abierta)");
-                new FrmPrincipal(gestor.getUsuarioActual()).setVisible(true);
-            }
-        });
+        // 4. Ocultar esta ventana (No usar dispose para poder reciclarla)
+        this.setVisible(false);
     }//GEN-LAST:event_btnVolverActionPerformed
 
     private void tblColaPedidosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblColaPedidosMouseClicked

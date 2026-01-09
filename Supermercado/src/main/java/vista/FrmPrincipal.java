@@ -5,14 +5,18 @@
 package vista;
 
 import java.util.logging.Level;
-import javax.swing.JInternalFrame;
+
 import modelo.Usuario;
 import utiles.*;
-/**
- *
- * @author Yop
- */
+
 public class FrmPrincipal extends javax.swing.JFrame {
+    
+    private FrmCategoria frmCategoria;
+    private FrmClientes frmClientes;
+    private FrmProductos frmProductos;
+    private FrmVentas frmVentas;
+    private FrmHistorialPrecios frmHistorial;
+    private FrmPedidosOnline frmPedidos;
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmPrincipal.class.getName());
     private Usuario usuarioLogeado;
@@ -75,7 +79,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jDesktopPane1 = new javax.swing.JDesktopPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         mnuDatos = new javax.swing.JMenu();
         mniClientes = new javax.swing.JMenuItem();
@@ -89,17 +92,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
-
-        javax.swing.GroupLayout jDesktopPane1Layout = new javax.swing.GroupLayout(jDesktopPane1);
-        jDesktopPane1.setLayout(jDesktopPane1Layout);
-        jDesktopPane1Layout.setHorizontalGroup(
-            jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 639, Short.MAX_VALUE)
-        );
-        jDesktopPane1Layout.setVerticalGroup(
-            jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 416, Short.MAX_VALUE)
-        );
 
         mnuDatos.setText("DATOS");
 
@@ -142,11 +134,11 @@ public class FrmPrincipal extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jDesktopPane1)
+            .addGap(0, 1030, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jDesktopPane1)
+            .addGap(0, 495, Short.MAX_VALUE)
         );
 
         pack();
@@ -156,83 +148,69 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private void mniCategoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniCategoriaActionPerformed
         gestor.getHistorialNavegacion().navegarA("Categorias");
         
-        FrmCategoria frmCategoria = new FrmCategoria();
+        if (frmCategoria == null) {
+            frmCategoria = new FrmCategoria();
+            frmCategoria.setPrincipal(this);
+        }
         frmCategoria.setVisible(true);
+        this.setVisible(false);
+    
     }//GEN-LAST:event_mniCategoriaActionPerformed
 
     private void mniClientesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniClientesActionPerformed
         gestor.getHistorialNavegacion().navegarA("Clientes");
-        for (JInternalFrame frame : jDesktopPane1.getAllFrames()) {
-            if (frame.getTitle().contains("Clientes")) {
-                frame.toFront();
-                frame.setVisible(true);
-                return;
-            }
-        }
         
-        FrmClientes frmClientes = new FrmClientes();
+        if (frmClientes == null) {
+            frmClientes = new FrmClientes();
+            frmClientes.setPrincipal(this);
+        }
         frmClientes.setVisible(true);
-        jDesktopPane1.add(frmClientes);
+        this.setVisible(false);
+    
     }//GEN-LAST:event_mniClientesActionPerformed
 
     private void mniProductosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniProductosActionPerformed
         gestor.getHistorialNavegacion().navegarA("Productos");
-        for (JInternalFrame frame : jDesktopPane1.getAllFrames()) {
-            if (frame.getTitle().contains("Productos")) {
-                frame.toFront();
-                frame.setVisible(true);
-                return;
-            }
-        }
         
-        FrmProductos frmProductos = new FrmProductos();
+        if (frmProductos == null) {
+            frmProductos = new FrmProductos();
+            frmProductos.setPrincipal(this);
+        }
         frmProductos.setVisible(true);
-        jDesktopPane1.add(frmProductos);
+        this.setVisible(false);
     }//GEN-LAST:event_mniProductosActionPerformed
 
     private void mniVentasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniVentasActionPerformed
         gestor.getHistorialNavegacion().navegarA("Ventas");
-        for (JInternalFrame frame : jDesktopPane1.getAllFrames()) {
-            if (frame.getTitle().contains("Ventas")) {
-                frame.toFront();
-                frame.setVisible(true);
-                return;
-            }
-        }
         
-        FrmVentas frmVentas = new FrmVentas();
+        if (frmVentas == null) {
+            frmVentas = new FrmVentas();
+            frmVentas.setPrincipal(this);
+        }
         frmVentas.setVisible(true);
-        jDesktopPane1.add(frmVentas);
+        this.setVisible(false);
     }//GEN-LAST:event_mniVentasActionPerformed
 
     private void mniHistorialPreciosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniHistorialPreciosActionPerformed
         gestor.getHistorialNavegacion().navegarA("HistorialPrecios");
-        for (JInternalFrame frame : jDesktopPane1.getAllFrames()) {
-            if (frame.getTitle().contains("Historial de Precios")) {
-                frame.toFront();
-                frame.setVisible(true);
-                return;
-            }
-        }
         
-        FrmHistorialPrecios frmHistorial = new FrmHistorialPrecios();
+        if (frmHistorial == null) {
+            frmHistorial = new FrmHistorialPrecios();
+            frmHistorial.setPrincipal(this);
+        }
         frmHistorial.setVisible(true);
-        jDesktopPane1.add(frmHistorial);
+        this.setVisible(false);
     }//GEN-LAST:event_mniHistorialPreciosActionPerformed
 
     private void mniPedidosOnlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniPedidosOnlineActionPerformed
         gestor.getHistorialNavegacion().navegarA("PedidosOnline");
-        for (JInternalFrame frame : jDesktopPane1.getAllFrames()) {
-            if (frame.getTitle().contains("Pedidos Online")) {
-                frame.toFront();
-                frame.setVisible(true);
-                return;
-            }
-        }
         
-        FrmPedidosOnline frmPedidos = new FrmPedidosOnline();
+        if (frmPedidos == null) {
+            frmPedidos = new FrmPedidosOnline();
+            frmPedidos.setPrincipal(this);
+        }
         frmPedidos.setVisible(true);
-        jDesktopPane1.add(frmPedidos);
+        this.setVisible(false);
     }//GEN-LAST:event_mniPedidosOnlineActionPerformed
 
     /**
@@ -240,7 +218,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
      */
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JDesktopPane jDesktopPane1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem mniCategoria;
     private javax.swing.JMenuItem mniClientes;

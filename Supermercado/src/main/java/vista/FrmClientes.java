@@ -6,7 +6,6 @@ package vista;
 
 import datos.DALCliente;
 import java.awt.HeadlessException;
-import java.awt.Window;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
@@ -19,6 +18,8 @@ import utiles.GestorSistema;
  * @author Toledo
  */
 public class FrmClientes extends javax.swing.JFrame {
+    
+    private FrmPrincipal principal;
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmClientes.class.getName());
     private GestorSistema gestor;
@@ -89,7 +90,9 @@ public class FrmClientes extends javax.swing.JFrame {
         // Deseleccionar fila de la tabla
         tblClientes.clearSelection();
     }
-    
+    public void setPrincipal(FrmPrincipal principal){
+        this.principal = principal;
+    }
     private boolean validarCampos() {
         nombre = txtNombre.getText().trim();
         dni = txtDni.getText().trim();
@@ -471,22 +474,13 @@ public class FrmClientes extends javax.swing.JFrame {
     private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
         gestor.getHistorialNavegacion().navegarA("Principal");
         logger.info("Volviendo al formulario principal");
+
+        if (principal != null) {
+            principal.setVisible(true);
+            principal.toFront();
+        }
         
-        // Simplemente cerrar este formulario
-        // NO abrir un nuevo FrmPrincipal
-        this.dispose();
-        
-        // Si realmente necesitas asegurarte de que el principal esté visible,
-        // puedes usar esta lógica:
-        java.awt.EventQueue.invokeLater(() -> {
-            for (Window window : Window.getWindows()) {
-                if (window instanceof FrmPrincipal) {
-                    window.setVisible(true);
-                    window.toFront();
-                    break;
-                }
-            }
-        });
+        this.setVisible(false);
     }//GEN-LAST:event_btnVolverActionPerformed
 
     /**

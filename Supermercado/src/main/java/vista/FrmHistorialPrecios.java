@@ -5,8 +5,6 @@
 package vista;
 
 import datos.*;
-import java.awt.Window;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -24,6 +22,7 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
     private HistorialCambiosPrecio historial;
     private DefaultTableModel modeloHistorial;
     private List<Producto> listaProductos;
+    private FrmPrincipal principal;
     
     public FrmHistorialPrecios() {
         initComponents();
@@ -54,7 +53,9 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
                 JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+    public void setPrincipal(){
+        
+    }
     private void inicializarTablaHistorial() {
         modeloHistorial = new DefaultTableModel() {
             @Override
@@ -333,7 +334,9 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         txtFechaFin.setText("");
         cargarHistorialCompleto();
     }
-    
+ public void setPrincipal(FrmPrincipal principal){
+     this.principal = principal;
+ }   
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -408,7 +411,7 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
                             .addComponent(lblAumentos, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lblDisminuciones, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(cmbProducto, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         datosLayout.setVerticalGroup(
             datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -472,28 +475,36 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(55, 55, 55)
+                        .addComponent(btnVerDetalles)
+                        .addGap(90, 90, 90)
+                        .addComponent(btnLimpiar))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(btnBuscarFecha)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnBuscarProducto)))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(43, 43, 43)
-                        .addComponent(btnVerDetalles)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnLimpiar)
-                        .addGap(39, 39, 39)
-                        .addComponent(btnVerUltimo)
-                        .addGap(51, 51, 51)
-                        .addComponent(btnVolver))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(23, 23, 23)
-                        .addComponent(btnBuscarFecha)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnBuscarProducto)
-                        .addGap(18, 18, 18)
+                        .addGap(72, 72, 72)
+                        .addComponent(btnVerUltimo))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnEstadisticas)
-                        .addGap(18, 18, 18)
+                        .addGap(21, 21, 21)))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
                         .addComponent(btnExportar)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnDeshacer)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(45, 45, 45)
+                        .addComponent(btnDeshacer)
+                        .addContainerGap())
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(90, 90, 90)
+                        .addComponent(btnVolver)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -542,11 +553,11 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
                 .addGap(26, 26, 26))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(26, 26, 26)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(datos, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(datos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1))
-                .addGap(0, 60, Short.MAX_VALUE))
+                .addGap(0, 37, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -557,9 +568,9 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
                 .addComponent(datos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26))
+                .addGap(20, 20, 20))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -600,22 +611,13 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
     private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
         gestor.getHistorialNavegacion().navegarA("Principal");
         logger.info("Volviendo al formulario principal");
+
+        if (principal != null) {
+            principal.setVisible(true);
+            principal.toFront();
+        }
         
-        // Simplemente cerrar este formulario
-        // NO abrir un nuevo FrmPrincipal
-        this.dispose();
-        
-        // Si realmente necesitas asegurarte de que el principal esté visible,
-        // puedes usar esta lógica:
-        java.awt.EventQueue.invokeLater(() -> {
-            for (Window window : Window.getWindows()) {
-                if (window instanceof FrmPrincipal) {
-                    window.setVisible(true);
-                    window.toFront();
-                    break;
-                }
-            }
-        });
+        this.setVisible(false);
     }//GEN-LAST:event_btnVolverActionPerformed
 
     private void btnExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportarActionPerformed
