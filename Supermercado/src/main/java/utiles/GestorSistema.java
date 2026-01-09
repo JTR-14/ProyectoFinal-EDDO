@@ -21,14 +21,14 @@ public class GestorSistema {
     private Map<String, Object> configuraciones;
     private Usuario usuarioActual;
     
+    // Constructor privado
     private GestorSistema() {
-        colaPedidos = new ColaPedidosOnline();
-        historialPrecios = new HistorialCambiosPrecio();
-        historialNavegacion = new HistorialNavegacion();
         configuraciones = new HashMap<>();
         cargarConfiguracionesDefault();
+        // NO inicializar aquí los componentes que dependen del gestor
     }
     
+    // Método estático para obtener la instancia única
     public static GestorSistema getInstancia() {
         if (instancia == null) {
             instancia = new GestorSistema();
@@ -36,24 +36,38 @@ public class GestorSistema {
         return instancia;
     }
     
+    // Carga configuraciones por defecto
     private void cargarConfiguracionesDefault() {
         configuraciones.put("notificar_stock_minimo", true);
         configuraciones.put("auto_completar", true);
         configuraciones.put("mostrar_historial", true);
+        configuraciones.put("iva_porcentaje", 0.18);
     }
     
-    // Getters para las estructuras de datos
+    // Getters con inicialización perezosa (Lazy Initialization)
+    
     public ColaPedidosOnline getColaPedidos() {
+        if (colaPedidos == null) {
+            colaPedidos = new ColaPedidosOnline();
+        }
         return colaPedidos;
     }
     
     public HistorialCambiosPrecio getHistorialPrecios() {
+        if (historialPrecios == null) {
+            historialPrecios = new HistorialCambiosPrecio(this);
+        }
         return historialPrecios;
     }
     
     public HistorialNavegacion getHistorialNavegacion() {
+        if (historialNavegacion == null) {
+            historialNavegacion = new HistorialNavegacion();
+        }
         return historialNavegacion;
     }
+    
+    // Getters y Setters básicos
     
     public Usuario getUsuarioActual() {
         return usuarioActual;
@@ -69,5 +83,16 @@ public class GestorSistema {
     
     public void setConfiguracion(String clave, Object valor) {
         configuraciones.put(clave, valor);
+    }
+    
+    // Métodos de utilidad
+    
+    public double getIVA() {
+        return (double) configuraciones.getOrDefault("iva_porcentaje", 0.18);
+    }
+    
+    public void limpiarSesion() {
+        usuarioActual = null;
+        historialNavegacion = new HistorialNavegacion();
     }
 }

@@ -6,6 +6,7 @@ package vista;
 
 import datos.DALCategoria;
 import datos.DALProductos;
+import java.awt.Window;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -131,28 +132,15 @@ public class FrmProductos extends javax.swing.JFrame {
             Producto producto = new Producto();
             producto.setIdProducto(idProducto);
             producto.setNombre(nombre);
+            producto.setCodigo(codigo);
             producto.setPrecioVenta(precioNuevo);
             
-            // Registrar en el historial de precios (PILA LIFO)
+            // Registrar en el historial de precios
             gestor.getHistorialPrecios().registrarCambioPrecio(
                 producto, precioAnterior, precioNuevo, motivo
             );
             
-            logger.info("Cambio de precio registrado - Producto ID: " + idProducto + 
-                       " - De: S/" + precioAnterior + " a S/" + precioNuevo + 
-                       " - Motivo: " + motivo);
-            
-            // Mostrar notificación si está habilitado
-            if ((Boolean)gestor.getConfiguracion("mostrar_historial")) {
-                JOptionPane.showMessageDialog(this, 
-                    "Cambio de precio registrado en historial:\n" +
-                    "Producto: " + nombre + "\n" +
-                    "Precio anterior: S/" + String.format("%.2f", precioAnterior) + "\n" +
-                    "Precio nuevo: S/" + String.format("%.2f", precioNuevo) + "\n" +
-                    "Motivo: " + motivo,
-                    "Historial Actualizado", 
-                    JOptionPane.INFORMATION_MESSAGE);
-            }
+            // Resto del código...
         }
     }
     
@@ -666,15 +654,21 @@ public class FrmProductos extends javax.swing.JFrame {
         gestor.getHistorialNavegacion().navegarA("Principal");
         logger.info("Volviendo al formulario principal");
         
-        // Cerrar este formulario
+        // Simplemente cerrar este formulario
+        // NO abrir un nuevo FrmPrincipal
         this.dispose();
         
-        // Volver al principal si hay usuario logueado
-        if (gestor.getUsuarioActual() != null) {
-            java.awt.EventQueue.invokeLater(() -> {
-                new FrmPrincipal(gestor.getUsuarioActual()).setVisible(true);
-            });
-        }
+        // Si realmente necesitas asegurarte de que el principal esté visible,
+        // puedes usar esta lógica:
+        java.awt.EventQueue.invokeLater(() -> {
+            for (Window window : Window.getWindows()) {
+                if (window instanceof FrmPrincipal) {
+                    window.setVisible(true);
+                    window.toFront();
+                    break;
+                }
+            }
+        });
     }//GEN-LAST:event_btnVolverActionPerformed
 
 

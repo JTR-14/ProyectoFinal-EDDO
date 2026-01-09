@@ -4,25 +4,66 @@
  */
 package vista;
 
+import java.util.logging.Level;
+import javax.swing.JInternalFrame;
 import modelo.Usuario;
-
+import utiles.*;
 /**
  *
- * @author Toledo
+ * @author Yop
  */
 public class FrmPrincipal extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmPrincipal.class.getName());
-
-   private Usuario usuarioLogeado;
+    private Usuario usuarioLogeado;
+    private GestorSistema gestor;
    
     public FrmPrincipal() {
         initComponents();
+        gestor = GestorSistema.getInstancia();
     }
+    
     public FrmPrincipal(Usuario usuario){
         initComponents();
         usuarioLogeado = usuario;
+        gestor = GestorSistema.getInstancia();
+        gestor.setUsuarioActual(usuario);
+        
         this.setTitle("Sistema Supermercado - Atendido por: " + usuario.getNombreCompleto());
+
+        
+        // Configurar permisos según rol
+        configurarPermisosPorRol(usuario.getIdRol());
+        
+        // Registrar navegación
+        gestor.getHistorialNavegacion().navegarA("Principal");
+        
+        logger.log(Level.INFO, "Usuario {0} inició sesión - Rol: {1}", 
+            new Object[]{usuario.getNombreCompleto(), obtenerNombreRol(usuario.getIdRol())});
+    }
+    
+    private String obtenerNombreRol(int idRol) {
+        switch(idRol) {
+            case 1: return "Administrador";
+            case 2: return "Cajero";
+            case 3: return "Almacenero";
+            case 4: return "Vendedor";
+            default: return "Usuario";
+        }
+    }
+    
+    private void configurarPermisosPorRol(int idRol) {
+        // Si es solo cajero o vendedor, limitar algunas opciones
+        if (idRol == 2 || idRol == 4) { // Cajero o Vendedor
+            mniCategoria.setEnabled(false);
+            mniHistorialPrecios.setEnabled(false);
+        }
+        
+        // Si es solo almacenero
+        if (idRol == 3) { // Almacenero
+            mniVentas.setEnabled(false);
+            mniPedidosOnline.setEnabled(false);
+        }
     }
  
     /**
@@ -34,28 +75,181 @@ public class FrmPrincipal extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jDesktopPane1 = new javax.swing.JDesktopPane();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        mnuDatos = new javax.swing.JMenu();
+        mniClientes = new javax.swing.JMenuItem();
+        mniProductos = new javax.swing.JMenuItem();
+        mniVentas = new javax.swing.JMenuItem();
+        mniCategoria = new javax.swing.JMenuItem();
+        mnuHistoriales = new javax.swing.JMenu();
+        mniHistorialPrecios = new javax.swing.JMenuItem();
+        mniPedidosOnline = new javax.swing.JMenuItem();
+        mnuMovimientos = new javax.swing.JMenu();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
+
+        javax.swing.GroupLayout jDesktopPane1Layout = new javax.swing.GroupLayout(jDesktopPane1);
+        jDesktopPane1.setLayout(jDesktopPane1Layout);
+        jDesktopPane1Layout.setHorizontalGroup(
+            jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 639, Short.MAX_VALUE)
+        );
+        jDesktopPane1Layout.setVerticalGroup(
+            jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 416, Short.MAX_VALUE)
+        );
+
+        mnuDatos.setText("DATOS");
+
+        mniClientes.setText("CLIENTES");
+        mniClientes.addActionListener(this::mniClientesActionPerformed);
+        mnuDatos.add(mniClientes);
+
+        mniProductos.setText("PRODUCTOS");
+        mniProductos.addActionListener(this::mniProductosActionPerformed);
+        mnuDatos.add(mniProductos);
+
+        mniVentas.setText("VENTAS");
+        mniVentas.addActionListener(this::mniVentasActionPerformed);
+        mnuDatos.add(mniVentas);
+
+        mniCategoria.setText("CATEGORÍA");
+        mniCategoria.addActionListener(this::mniCategoriaActionPerformed);
+        mnuDatos.add(mniCategoria);
+
+        jMenuBar1.add(mnuDatos);
+
+        mnuHistoriales.setText("HISTORIALES");
+
+        mniHistorialPrecios.setText("HISTORIAL DE PRECIOS");
+        mniHistorialPrecios.addActionListener(this::mniHistorialPreciosActionPerformed);
+        mnuHistoriales.add(mniHistorialPrecios);
+
+        mniPedidosOnline.setText("PEDIDOS ONLINE");
+        mniPedidosOnline.addActionListener(this::mniPedidosOnlineActionPerformed);
+        mnuHistoriales.add(mniPedidosOnline);
+
+        jMenuBar1.add(mnuHistoriales);
+
+        mnuMovimientos.setText("MOVIMIENTOS");
+        jMenuBar1.add(mnuMovimientos);
+
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 666, Short.MAX_VALUE)
+            .addComponent(jDesktopPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 437, Short.MAX_VALUE)
+            .addComponent(jDesktopPane1)
         );
 
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void mniCategoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniCategoriaActionPerformed
+        gestor.getHistorialNavegacion().navegarA("Categorias");
+        
+        FrmCategoria frmCategoria = new FrmCategoria();
+        frmCategoria.setVisible(true);
+    }//GEN-LAST:event_mniCategoriaActionPerformed
+
+    private void mniClientesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniClientesActionPerformed
+        gestor.getHistorialNavegacion().navegarA("Clientes");
+        for (JInternalFrame frame : jDesktopPane1.getAllFrames()) {
+            if (frame.getTitle().contains("Clientes")) {
+                frame.toFront();
+                frame.setVisible(true);
+                return;
+            }
+        }
+        
+        FrmClientes frmClientes = new FrmClientes();
+        frmClientes.setVisible(true);
+        jDesktopPane1.add(frmClientes);
+    }//GEN-LAST:event_mniClientesActionPerformed
+
+    private void mniProductosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniProductosActionPerformed
+        gestor.getHistorialNavegacion().navegarA("Productos");
+        for (JInternalFrame frame : jDesktopPane1.getAllFrames()) {
+            if (frame.getTitle().contains("Productos")) {
+                frame.toFront();
+                frame.setVisible(true);
+                return;
+            }
+        }
+        
+        FrmProductos frmProductos = new FrmProductos();
+        frmProductos.setVisible(true);
+        jDesktopPane1.add(frmProductos);
+    }//GEN-LAST:event_mniProductosActionPerformed
+
+    private void mniVentasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniVentasActionPerformed
+        gestor.getHistorialNavegacion().navegarA("Ventas");
+        for (JInternalFrame frame : jDesktopPane1.getAllFrames()) {
+            if (frame.getTitle().contains("Ventas")) {
+                frame.toFront();
+                frame.setVisible(true);
+                return;
+            }
+        }
+        
+        FrmVentas frmVentas = new FrmVentas();
+        frmVentas.setVisible(true);
+        jDesktopPane1.add(frmVentas);
+    }//GEN-LAST:event_mniVentasActionPerformed
+
+    private void mniHistorialPreciosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniHistorialPreciosActionPerformed
+        gestor.getHistorialNavegacion().navegarA("HistorialPrecios");
+        for (JInternalFrame frame : jDesktopPane1.getAllFrames()) {
+            if (frame.getTitle().contains("Historial de Precios")) {
+                frame.toFront();
+                frame.setVisible(true);
+                return;
+            }
+        }
+        
+        FrmHistorialPrecios frmHistorial = new FrmHistorialPrecios();
+        frmHistorial.setVisible(true);
+        jDesktopPane1.add(frmHistorial);
+    }//GEN-LAST:event_mniHistorialPreciosActionPerformed
+
+    private void mniPedidosOnlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniPedidosOnlineActionPerformed
+        gestor.getHistorialNavegacion().navegarA("PedidosOnline");
+        for (JInternalFrame frame : jDesktopPane1.getAllFrames()) {
+            if (frame.getTitle().contains("Pedidos Online")) {
+                frame.toFront();
+                frame.setVisible(true);
+                return;
+            }
+        }
+        
+        FrmPedidosOnline frmPedidos = new FrmPedidosOnline();
+        frmPedidos.setVisible(true);
+        jDesktopPane1.add(frmPedidos);
+    }//GEN-LAST:event_mniPedidosOnlineActionPerformed
+
     /**
      * @param args the command line arguments
      */
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JDesktopPane jDesktopPane1;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem mniCategoria;
+    private javax.swing.JMenuItem mniClientes;
+    private javax.swing.JMenuItem mniHistorialPrecios;
+    private javax.swing.JMenuItem mniPedidosOnline;
+    private javax.swing.JMenuItem mniProductos;
+    private javax.swing.JMenuItem mniVentas;
+    private javax.swing.JMenu mnuDatos;
+    private javax.swing.JMenu mnuHistoriales;
+    private javax.swing.JMenu mnuMovimientos;
     // End of variables declaration//GEN-END:variables
 }

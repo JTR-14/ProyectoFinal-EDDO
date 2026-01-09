@@ -20,7 +20,7 @@ public class HistorialNavegacion {
         futuro = new Stack<>();
     }
     
-    // Navegar a una nueva página (PUSH)
+    // Navegar a una nueva página
     public void navegarA(String pagina) {
         if (!historial.isEmpty() && !historial.peek().equals(pagina)) {
             historial.push(pagina);
@@ -32,7 +32,7 @@ public class HistorialNavegacion {
         }
     }
     
-    // Retroceder (POP)
+    // Retroceder
     public String retroceder() {
         if (historial.size() <= 1) {
             System.out.println("No hay páginas anteriores");
@@ -62,7 +62,7 @@ public class HistorialNavegacion {
         return paginaFutura;
     }
     
-    // Ver página actual (PEEK)
+    // Ver página actual
     public String verPaginaActual() {
         if (historial.isEmpty()) {
             return null;
@@ -95,5 +95,14 @@ public class HistorialNavegacion {
         historial.clear();
         futuro.clear();
         System.out.println("Historial de navegación limpiado");
+    }
+    
+    // Getters
+    public Stack<String> getHistorial() {
+        return historial;
+    }
+    
+    public Stack<String> getFuturo() {
+        return futuro;
     }
 }

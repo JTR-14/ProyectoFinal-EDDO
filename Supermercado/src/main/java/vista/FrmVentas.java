@@ -7,12 +7,10 @@ package vista;
 import modelo.*;
 import utiles.*;
 import datos.*;
-import java.awt.HeadlessException;
+import java.awt.Window;
 import javax.swing.*;
 import java.util.*;
 import java.util.logging.Level;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -33,8 +31,10 @@ public class FrmVentas extends javax.swing.JFrame {
         gestor = GestorSistema.getInstancia();
         idUsuarioActual = gestor.getUsuarioActual().getIdUsuario();
         clienteSeleccionado = null;
-        inicializarVenta();
+        
+        // IMPORTANTE: Primero cargar clientes, luego inicializar venta
         cargarClientes();
+        inicializarVenta();
         inicializarTablaDetalles();
         actualizarNumeroVenta();
     }
@@ -44,7 +44,12 @@ public class FrmVentas extends javax.swing.JFrame {
         ventaActual.setIdUsuario(idUsuarioActual);
         actualizarTotales();
         clienteSeleccionado = null;
-        cmbCliente.setSelectedIndex(0);
+        
+        // SOLO seleccionar índice 0 si hay elementos
+        if (cmbCliente.getItemCount() > 0) {
+            cmbCliente.setSelectedIndex(0);
+        }
+        
         txtCodigo.requestFocus();
     }
     
@@ -88,10 +93,19 @@ public class FrmVentas extends javax.swing.JFrame {
         try {
             listaClientes = DALCliente.obtenerClientes();
             cmbCliente.removeAllItems();
+            
+            // AGREGAR ESTA LÍNEA PARA CLIENTE POR DEFECTO
             cmbCliente.addItem("-- Seleccione Cliente --");
             
             for (Cliente cliente : listaClientes) {
                 cmbCliente.addItem(cliente.getNombre() + " - DNI: " + cliente.getDni());
+            }
+            
+            // Si no hay clientes, mostrar mensaje
+            if (listaClientes.isEmpty()) {
+                logger.warning("No hay clientes registrados en la base de datos");
+                cmbCliente.addItem("NO HAY CLIENTES REGISTRADOS");
+                cmbCliente.setEnabled(false);
             }
             
             logger.log(Level.INFO, "Clientes cargados: {0}", listaClientes.size());
@@ -101,12 +115,21 @@ public class FrmVentas extends javax.swing.JFrame {
                 "Error al cargar clientes: " + ex.getMessage(),
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
+            
+            // Asegurar que el combo tenga al menos un elemento
+            cmbCliente.addItem("-- Error al cargar clientes --");
+            cmbCliente.setEnabled(false);
         }
     }
     
     private void actualizarNumeroVenta() {
-        int siguienteNumero = DALVentas.obtenerSiguienteNumeroVenta();
-        lblNumeroVenta.setText("Venta #: " + siguienteNumero);
+        try {
+            int siguienteNumero = DALVentas.obtenerSiguienteNumeroVenta();
+            lblNumeroVenta.setText("Venta #: " + siguienteNumero);
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "Error al obtener número de venta: {0}", ex.getMessage());
+            lblNumeroVenta.setText("Venta #: --");
+        }
     }
     
     private void buscarProducto() {
@@ -180,7 +203,7 @@ public class FrmVentas extends javax.swing.JFrame {
                 txtCodigo.setText("");
                 txtCodigo.requestFocus();
             }
-        } catch (HeadlessException ex) {
+        } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error al buscar producto: {0}", ex.getMessage());
             JOptionPane.showMessageDialog(this, 
                 "Error al buscar producto: " + ex.getMessage(),
@@ -225,9 +248,12 @@ public class FrmVentas extends javax.swing.JFrame {
         txtTotal.setText(String.format("S/ %.2f", total));
         
         // Actualizar contador de productos
-        int totalProductos = ventaActual.getDetalles().stream()
-                .mapToInt(DetalleVenta::getCantidad)
-                .sum();
+        int totalProductos = 0;
+        if (ventaActual.getDetalles() != null) {
+            for (DetalleVenta detalle : ventaActual.getDetalles()) {
+                totalProductos += detalle.getCantidad();
+            }
+        }
         lblTotalProductos.setText("Productos: " + totalProductos + " items");
     }
     
@@ -236,16 +262,20 @@ public class FrmVentas extends javax.swing.JFrame {
         int clienteIndex = cmbCliente.getSelectedIndex();
         
         // Reiniciar todo
-        inicializarVenta();
+        ventaActual = new Venta();
+        ventaActual.setIdUsuario(idUsuarioActual);
         modeloDetalles.setRowCount(0);
         
-        // Restaurar cliente si había uno seleccionado
-        if (clienteIndex > 0) {
+        // Restaurar cliente si había uno seleccionado y hay elementos
+        if (clienteIndex > 0 && cmbCliente.getItemCount() > clienteIndex) {
             cmbCliente.setSelectedIndex(clienteIndex);
+        } else if (cmbCliente.getItemCount() > 0) {
+            cmbCliente.setSelectedIndex(0);
         }
         
         // Actualizar número de venta
         actualizarNumeroVenta();
+        actualizarTotales();
         
         txtCodigo.requestFocus();
     }
@@ -274,12 +304,6 @@ public class FrmVentas extends javax.swing.JFrame {
                 JOptionPane.INFORMATION_MESSAGE);
         }
     }
-    
-    private void formWindowOpened(java.awt.event.WindowEvent evt) {                                  
-        // Registrar navegación
-        gestor.getHistorialNavegacion().navegarA("Ventas");
-        logger.info("Formulario Ventas abierto por: " + gestor.getUsuarioActual().getNombreCompleto());
-    }  
  
     /**
      * This method is called from within the constructor to initialize the form.
@@ -500,7 +524,7 @@ public class FrmVentas extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
-        if (cmbCliente.getSelectedIndex() == 0) {
+        if (cmbCliente.getSelectedIndex() <= 0) {
             JOptionPane.showMessageDialog(this,
                 "Seleccione un cliente para la venta",
                 "Cliente Requerido",
@@ -650,12 +674,31 @@ public class FrmVentas extends javax.swing.JFrame {
         // Cerrar este formulario
         this.dispose();
         
-        // Volver al principal si hay usuario logueado
-        if (gestor.getUsuarioActual() != null) {
-            java.awt.EventQueue.invokeLater(() -> {
+        // Buscar si ya hay una instancia de FrmPrincipal abierta
+        // Si la encuentra, la trae al frente en lugar de crear una nueva
+        java.awt.EventQueue.invokeLater(() -> {
+            boolean principalEncontrado = false;
+            Window[] windows = Window.getWindows();
+            
+            for (Window window : windows) {
+                if (window instanceof FrmPrincipal && window.isVisible()) {
+                    // Ya hay una instancia abierta, traerla al frente
+                    window.setVisible(true);
+                    window.toFront();
+                    window.requestFocus();
+                    principalEncontrado = true;
+                    logger.info("FrmPrincipal encontrado y traído al frente desde Ventas");
+                    break;
+                }
+            }
+            
+            // Si no se encontró ninguna instancia abierta de FrmPrincipal
+            // y hay un usuario logueado, crear una nueva (solo en este caso)
+            if (!principalEncontrado && gestor.getUsuarioActual() != null) {
+                logger.info("Creando nueva instancia de FrmPrincipal desde Ventas (no se encontró una abierta)");
                 new FrmPrincipal(gestor.getUsuarioActual()).setVisible(true);
-            });
-        }
+            }
+        });
     }//GEN-LAST:event_btnVolverActionPerformed
 
     private void tblDetallesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblDetallesMouseClicked

@@ -8,17 +8,15 @@ package utiles;
  *
  * @author USER
  */
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import datos.Conexion;
+import datos.DALProductos;
+import datos.DALUsuarios;
+import modelo.Producto;
+import javax.swing.*;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-import modelo.Producto;
-import datos.*;
+import java.util.*;
 
 public class HistorialCambiosPrecio {
     
@@ -145,12 +143,14 @@ public class HistorialCambiosPrecio {
         public String getNombreUsuario() { return nombreUsuario; }
     }
     
+    // Atributos de la clase principal
     private Stack<CambioPrecio> pilaCambios;
     private GestorSistema gestor;
     
-    public HistorialCambiosPrecio() {
-        pilaCambios = new Stack<>();
-        gestor = GestorSistema.getInstancia();
+    // Constructor modificado: recibe el gestor como parámetro
+    public HistorialCambiosPrecio(GestorSistema gestor) {
+        this.gestor = gestor;
+        this.pilaCambios = new Stack<>();
         cargarHistorialDesdeBD();
     }
     
@@ -160,7 +160,7 @@ public class HistorialCambiosPrecio {
                     "INNER JOIN productos p ON hp.id_producto = p.id_productos " +
                     "INNER JOIN usuarios u ON hp.id_usuario = u.id_usuarios " +
                     "ORDER BY hp.fecha_hora DESC " +
-                    "LIMIT 100"; // Cargar últimos 100 cambios
+                    "LIMIT 100";
         
         try (Connection cn = Conexion.realizarConexion();
              PreparedStatement ps = cn.prepareStatement(sql);
@@ -194,7 +194,7 @@ public class HistorialCambiosPrecio {
         }
     }
     
-    // Método para registrar un cambio de precio (PUSH)
+    // Método para registrar un cambio de precio
     public boolean registrarCambioPrecio(Producto producto, double precioAnterior, 
                                         double precioNuevo, String motivo) {
         if (producto == null) {
@@ -204,6 +204,12 @@ public class HistorialCambiosPrecio {
         
         if (precioAnterior == precioNuevo) {
             System.out.println("No hay cambio de precio para registrar");
+            return false;
+        }
+        
+        // Verificar si hay usuario actual
+        if (gestor.getUsuarioActual() == null) {
+            System.err.println("Error: No hay usuario logueado");
             return false;
         }
         
@@ -234,8 +240,8 @@ public class HistorialCambiosPrecio {
                                "Motivo: " + motivo + "\n" +
                                "Usuario: " + nombreUsuario;
                 
-                javax.swing.JOptionPane.showMessageDialog(null, mensaje, 
-                    "Historial Actualizado", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, mensaje, 
+                    "Historial Actualizado", JOptionPane.INFORMATION_MESSAGE);
             }
             
             return true;
@@ -244,7 +250,7 @@ public class HistorialCambiosPrecio {
         return false;
     }
     
-    // Método para deshacer el último cambio de precio (POP - LIFO)
+    // Método para deshacer el último cambio de precio
     public CambioPrecio deshacerUltimoCambio() {
         if (estaVacia()) {
             System.out.println("No hay cambios para deshacer");
@@ -257,7 +263,7 @@ public class HistorialCambiosPrecio {
         return ultimoCambio;
     }
     
-    // Método para ver el último cambio sin deshacerlo (PEEK)
+    // Método para ver el último cambio sin deshacerlo
     public CambioPrecio verUltimoCambio() {
         if (estaVacia()) {
             return null;
@@ -265,7 +271,7 @@ public class HistorialCambiosPrecio {
         return pilaCambios.peek();
     }
     
-    // Método para obtener todos los cambios (para tabla)
+    // Método para obtener todos los cambios
     public List<CambioPrecio> obtenerTodosLosCambios() {
         return new ArrayList<>(pilaCambios);
     }
@@ -323,7 +329,7 @@ public class HistorialCambiosPrecio {
             double sumaDisminuciones = 0;
             
             // Contar productos modificados
-            java.util.Map<Integer, Integer> contadorProductos = new java.util.HashMap<>();
+            Map<Integer, Integer> contadorProductos = new HashMap<>();
             
             for (CambioPrecio cambio : historial.pilaCambios) {
                 // Contar aumentos/disminuciones
@@ -348,7 +354,7 @@ public class HistorialCambiosPrecio {
             int maxModificaciones = 0;
             int idProductoMasModificado = 0;
             
-            for (java.util.Map.Entry<Integer, Integer> entry : contadorProductos.entrySet()) {
+            for (Map.Entry<Integer, Integer> entry : contadorProductos.entrySet()) {
                 if (entry.getValue() > maxModificaciones) {
                     maxModificaciones = entry.getValue();
                     idProductoMasModificado = entry.getKey();
@@ -356,10 +362,12 @@ public class HistorialCambiosPrecio {
             }
             
             // Buscar el producto más modificado
-            for (CambioPrecio cambio : historial.pilaCambios) {
-                if (cambio.getProducto().getIdProducto() == idProductoMasModificado) {
-                    productoMasModificado = cambio.getProducto();
-                    break;
+            if (idProductoMasModificado > 0) {
+                for (CambioPrecio cambio : historial.pilaCambios) {
+                    if (cambio.getProducto().getIdProducto() == idProductoMasModificado) {
+                        productoMasModificado = cambio.getProducto();
+                        break;
+                    }
                 }
             }
         }

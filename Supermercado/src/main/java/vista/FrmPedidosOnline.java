@@ -5,6 +5,7 @@
 package vista;
 
 import datos.*;
+import java.awt.Window;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -529,11 +530,12 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
                         .addComponent(cmbMetodoPago, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(datosLayout.createSequentialGroup()
-                        .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtNotas, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtSubtotal, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblProductosPedido, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblProductosPedido, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtNotas, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtSubtotal, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
                         .addComponent(txtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(27, 27, 27))))
@@ -853,12 +855,31 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         // Cerrar este formulario
         this.dispose();
         
-        // Volver al principal si hay usuario logueado
-        if (gestor.getUsuarioActual() != null) {
-            java.awt.EventQueue.invokeLater(() -> {
+        // Buscar si ya hay una instancia de FrmPrincipal abierta
+        // Si la encuentra, la trae al frente en lugar de crear una nueva
+        java.awt.EventQueue.invokeLater(() -> {
+            boolean principalEncontrado = false;
+            Window[] windows = Window.getWindows();
+            
+            for (Window window : windows) {
+                if (window instanceof FrmPrincipal && window.isVisible()) {
+                    // Ya hay una instancia abierta, traerla al frente
+                    window.setVisible(true);
+                    window.toFront();
+                    window.requestFocus();
+                    principalEncontrado = true;
+                    logger.info("FrmPrincipal encontrado y traído al frente");
+                    break;
+                }
+            }
+            
+            // Si no se encontró ninguna instancia abierta de FrmPrincipal
+            // y hay un usuario logueado, crear una nueva (solo en este caso)
+            if (!principalEncontrado && gestor.getUsuarioActual() != null) {
+                logger.info("Creando nueva instancia de FrmPrincipal (no se encontró una abierta)");
                 new FrmPrincipal(gestor.getUsuarioActual()).setVisible(true);
-            });
-        }
+            }
+        });
     }//GEN-LAST:event_btnVolverActionPerformed
 
     private void tblColaPedidosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblColaPedidosMouseClicked

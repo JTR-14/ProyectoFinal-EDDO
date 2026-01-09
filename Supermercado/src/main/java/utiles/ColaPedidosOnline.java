@@ -8,11 +8,10 @@ package utiles;
  *
  * @author USER
  */
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.ArrayList;
-import javax.swing.JOptionPane;
+
 import modelo.Pedido;
+import javax.swing.*;
+import java.util.*;
 
 public class ColaPedidosOnline {
     private Queue<Pedido> colaPedidos;
@@ -25,21 +24,15 @@ public class ColaPedidosOnline {
         siguienteId = 1;
     }
     
-    // Método para agregar un nuevo pedido a la cola (FIFO)
+    // Método para agregar un nuevo pedido a la cola
     public boolean agregarPedido(Pedido pedido) {
         if (pedido == null) {
             JOptionPane.showMessageDialog(null, "El pedido no puede ser nulo", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         
-        if (pedido.getDetalles().isEmpty()) {
+        if (pedido.getDetalles() == null || pedido.getDetalles().isEmpty()) {
             JOptionPane.showMessageDialog(null, "El pedido debe contener al menos un producto", "Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        
-        // Verificar stock disponible
-        if (!pedido.verificarStockDisponible()) {
-            JOptionPane.showMessageDialog(null, "No hay stock suficiente para algunos productos", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         
@@ -57,7 +50,7 @@ public class ColaPedidosOnline {
         return agregado;
     }
     
-    // Método para procesar el siguiente pedido (FIFO)
+    // Método para procesar el siguiente pedido
     public Pedido procesarSiguientePedido() {
         if (estaVacia()) {
             System.out.println("No hay pedidos pendientes en la cola");
@@ -75,7 +68,7 @@ public class ColaPedidosOnline {
     
     // Método para completar un pedido procesado
     public boolean completarPedido(Pedido pedido) {
-        if (pedido != null && pedido.getEstado().equals("EN_PROCESO")) {
+        if (pedido != null && "EN_PROCESO".equals(pedido.getEstado())) {
             pedido.setEstado("COMPLETADO");
             System.out.println("Pedido #" + pedido.getIdPedido() + " completado");
             return true;
@@ -160,5 +153,14 @@ public class ColaPedidosOnline {
             }
         }
         return null;
+    }
+    
+    // Getters
+    public Queue<Pedido> getColaPedidos() {
+        return colaPedidos;
+    }
+    
+    public int getSiguienteId() {
+        return siguienteId;
     }
 }
