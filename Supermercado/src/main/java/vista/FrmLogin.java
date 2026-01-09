@@ -9,6 +9,7 @@ import datos.DALUsuarios;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import modelo.Usuario;
+import utiles.GestorSistema;
 
 /**
  *
@@ -23,6 +24,7 @@ public class FrmLogin extends javax.swing.JFrame {
      */
     public FrmLogin() {
         initComponents();
+        setLocationRelativeTo(null);
     }
 
     /**
@@ -140,25 +142,40 @@ public class FrmLogin extends javax.swing.JFrame {
     private void btnIngresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIngresarActionPerformed
         String username = txtNombre.getText();
         String contrasenia = new String(txtContrasenia.getPassword());
+        
         if(username.trim().isEmpty()){
             JOptionPane.showMessageDialog(null, "Ingrese username","Aviso",2);
             return;
         }
+        
         if(contrasenia.trim().isEmpty()){
             JOptionPane.showMessageDialog(null, "Ingrese password","Aviso",2);
             return;
         }
+        
         Usuario usuario = DALUsuarios.login(username, contrasenia);
+        
         if(usuario != null){
             JOptionPane.showMessageDialog(null, "¡Bienvenido "+usuario.getNombreCompleto(),"Mensaje",1);
-            FrmClientes principal = new FrmClientes();
+            
+            // CORRECCIÓN: Guardar usuario en el gestor del sistema
+            GestorSistema gestor = GestorSistema.getInstancia();
+            gestor.setUsuarioActual(usuario);
+            
+            // Registrar navegación inicial
+            gestor.getHistorialNavegacion().navegarA("Login");
+            gestor.getHistorialNavegacion().navegarA("Principal");
+            
+            // CORRECCIÓN: Redirigir a FrmPrincipal en lugar de FrmClientes
+            FrmPrincipal principal = new FrmPrincipal(usuario);
             this.dispose();
             principal.setVisible(true);
             
-        }
-        else{
-           JOptionPane.showMessageDialog(null, "Nombre y Contrasenia incorrectos\nIngrese nuevamente los datos","Error",0);
-           limpiar();
+        } else {
+            JOptionPane.showMessageDialog(null, 
+                "Nombre y Contraseña incorrectos\nIngrese nuevamente los datos",
+                "Error",0);
+            limpiar();
         }
     }//GEN-LAST:event_btnIngresarActionPerformed
 
