@@ -9,8 +9,6 @@ package utiles;
  * @author USER
  */
 import datos.Conexion;
-import datos.DALProductos;
-import datos.DALUsuarios;
 import modelo.Producto;
 import javax.swing.*;
 import java.sql.*;

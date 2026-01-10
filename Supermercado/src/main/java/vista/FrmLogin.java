@@ -10,7 +10,7 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import modelo.Usuario;
 import utiles.GestorSistema;
-
+import logica.ControladorProductos;
 /**
  *
  * @author Toledo
@@ -154,7 +154,7 @@ public class FrmLogin extends javax.swing.JFrame {
         
         if(usuario != null){
             JOptionPane.showMessageDialog(null, "¡Bienvenido "+usuario.getNombreCompleto(),"Mensaje",1);
-            
+            ControladorProductos.cargarDatosAlArbol();
             // CORRECCIÓN: Guardar usuario en el gestor del sistema
             GestorSistema gestor = GestorSistema.getInstancia();
             gestor.setUsuarioActual(usuario);

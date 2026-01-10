@@ -12,6 +12,7 @@ import javax.swing.table.DefaultTableModel;
 import modelo.Categoria;
 import modelo.Producto;
 import utiles.GestorSistema;
+import logica.ControladorProductos;
 
 /**
  *
@@ -485,11 +486,14 @@ public class FrmProductos extends javax.swing.JFrame {
         try {
             if (DALProductos.insertarProducto(codigo, nombre, precioCosto, precioVenta, 
                                               stockActual, stockMinimo, idCategoria)) {
+                Producto ultimoProducto = DALProductos.buscarPorCodigo(codigo);
+                ControladorProductos.agregarAlArbol(ultimoProducto);
                 JOptionPane.showMessageDialog(this, 
                     "Producto registrado correctamente", 
                     "Éxito", 
                     JOptionPane.INFORMATION_MESSAGE);
                 logger.info("Producto registrado - Código: " + codigo + " - Nombre: " + nombre);
+                
                 llenarTabla();
                 limpiar();
             } else {
