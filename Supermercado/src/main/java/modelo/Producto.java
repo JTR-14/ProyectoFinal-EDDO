@@ -8,7 +8,7 @@ package modelo;
  *
  * @author Toledo
  */
-public class Producto {
+public class Producto implements Comparable<Producto> {
     private int idProducto;
     private String codigo;
     private String nombre;
@@ -20,7 +20,9 @@ public class Producto {
 
     public Producto() {
     }
-
+    public Producto(String codigo) {
+        this.codigo = codigo;
+    }
     public Producto(int idProducto, String codigo, String nombre, double precioCosto, double precioVenta, int stockActual, int stockMinimo, int idCategoria) {
         this.idProducto = idProducto;
         this.codigo = codigo;
@@ -100,6 +102,11 @@ public class Producto {
     @Override
     public String toString() {
         return nombre;
+    }
+
+    @Override
+    public int compareTo(Producto otro) {
+        return this.codigo.compareTo(otro.codigo);
     }
     
 }

@@ -4,42 +4,41 @@
  */
 package utiles;
 
-import modelo.Producto;
 
-public class NodoProducto {
-    private Producto producto;
-    private NodoProducto izquierda;
-    private NodoProducto derecha;
+public class NodoAVL<T extends Comparable<T>> {
+    private T dato;
+    private NodoAVL<T> izquierda;
+    private NodoAVL<T> derecha;
     private int altura;
 
-    public NodoProducto(Producto producto) {
-        this.producto = producto;
+    public NodoAVL(T dato) {
+        this.dato = dato;
         this.izquierda = null;
         this.derecha = null;
         this.altura = 1;
     }
 
-    public Producto getProducto() {
-        return producto;
+    public T getDato() {
+        return dato;
     }
 
-    public void setProducto(Producto producto) {
-        this.producto = producto;
+    public void setDato(T dato) {
+        this.dato = dato;
     }
 
-    public NodoProducto getIzquierda() {
+    public NodoAVL<T> getIzquierda() {
         return izquierda;
     }
 
-    public void setIzquierda(NodoProducto izquierda) {
+    public void setIzquierda(NodoAVL<T> izquierda) {
         this.izquierda = izquierda;
     }
 
-    public NodoProducto getDerecha() {
+    public NodoAVL<T> getDerecha() {
         return derecha;
     }
 
-    public void setDerecha(NodoProducto derecha) {
+    public void setDerecha(NodoAVL<T> derecha) {
         this.derecha = derecha;
     }
 
@@ -50,4 +49,5 @@ public class NodoProducto {
     public void setAltura(int altura) {
         this.altura = altura;
     }
+    
 }

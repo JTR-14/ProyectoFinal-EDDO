@@ -1,30 +1,30 @@
 package logica;
 
 import datos.DALProductos;
-import utiles.ArbolProductosAVL;
+import utiles.ArbolAVL;
 import modelo.Producto;
 import java.util.ArrayList;
 
 public class ControladorProductos {
 
-    private static ArbolProductosAVL arbolProductos = new ArbolProductosAVL();
-        //Mas rapidez en busquedas
-    public static void cargarDatosAlArbol() {
-        arbolProductos = new ArbolProductosAVL(); 
-        ArrayList<Producto> listaBD = DALProductos.obtenerProductos();
+    private static ArbolAVL<Producto> arbolProductos = new ArbolAVL<>();
 
-        for (Producto p : listaBD) {
+    public static void cargarDatosAlArbol() {
+        arbolProductos.limpiar();
+        ArrayList<Producto> lista = DALProductos.obtenerProductos();
+        
+        for (Producto p : lista) {
             arbolProductos.insertar(p);
         }
-        
-        System.out.println("Carga completada: " + listaBD.size() + " productos en memoria RAM.");
-    }
-
-    public static Producto buscarPorCodigo(String codigo) {
-        return arbolProductos.buscar(codigo);
+        System.out.println("Árbol Genérico cargado con " + lista.size() + " productos.");
     }
 
     public static void agregarAlArbol(Producto p) {
         arbolProductos.insertar(p);
+    }
+
+    public static Producto buscarPorCodigo(String codigo) {
+        Producto moldeBusqueda = new Producto(codigo);
+        return arbolProductos.buscar(moldeBusqueda);
     }
 }

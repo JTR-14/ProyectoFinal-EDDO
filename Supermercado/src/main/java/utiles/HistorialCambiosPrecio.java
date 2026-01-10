@@ -4,20 +4,15 @@
  */
 package utiles;
 
-/**
- *
- * @author USER
- */
 import datos.Conexion;
 
-import datos.DALProductos;
-import datos.DALUsuarios;
 import modelo.Producto;
 import javax.swing.*;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
 
 public class HistorialCambiosPrecio {
     
@@ -43,7 +38,6 @@ public class HistorialCambiosPrecio {
             this.nombreUsuario = nombreUsuario;
         }
         
-        // Constructor para cargar desde base de datos
         public CambioPrecio(int idCambio, Producto producto, double precioAnterior, 
                            double precioNuevo, String fechaHora, String motivo, 
                            int idUsuario, String nombreUsuario) {
@@ -57,7 +51,6 @@ public class HistorialCambiosPrecio {
             this.nombreUsuario = nombreUsuario;
         }
         
-        // Método para guardar en base de datos
         public boolean guardarEnBD() {
             String sql = "INSERT INTO historial_precios (id_producto, precio_anterior, " +
                         "precio_nuevo, fecha_hora, motivo, id_usuario) VALUES (?, ?, ?, ?, ?, ?)";
@@ -97,7 +90,6 @@ public class HistorialCambiosPrecio {
                 precioNuevo, fechaHora, motivo, nombreUsuario);
         }
         
-        // Formato para tabla
         public Object[] toTableRow() {
             return new Object[] {
                 idCambio,
@@ -145,13 +137,13 @@ public class HistorialCambiosPrecio {
     }
     
     // Atributos de la clase principal
-    private Stack<CambioPrecio> pilaCambios;
+    private Pila<CambioPrecio> pilaCambios;
     private GestorSistema gestor;
     
     // Constructor modificado: recibe el gestor como parámetro
     public HistorialCambiosPrecio(GestorSistema gestor) {
         this.gestor = gestor;
-        this.pilaCambios = new Stack<>();
+        this.pilaCambios = new Pila<>();
         cargarHistorialDesdeBD();
     }
     
@@ -274,14 +266,14 @@ public class HistorialCambiosPrecio {
     
     // Método para obtener todos los cambios
     public List<CambioPrecio> obtenerTodosLosCambios() {
-        return new ArrayList<>(pilaCambios);
+        return pilaCambios.toList();
     }
     
     // Método para buscar cambios por producto
     public List<CambioPrecio> buscarCambiosPorProducto(int idProducto) {
         List<CambioPrecio> resultados = new ArrayList<>();
         
-        for (CambioPrecio cambio : pilaCambios) {
+        for (CambioPrecio cambio : pilaCambios.toList()) {
             if (cambio.getProducto().getIdProducto() == idProducto) {
                 resultados.add(cambio);
             }
@@ -294,7 +286,7 @@ public class HistorialCambiosPrecio {
     public List<CambioPrecio> buscarCambiosPorFecha(String fechaInicio, String fechaFin) {
         List<CambioPrecio> resultados = new ArrayList<>();
         
-        for (CambioPrecio cambio : pilaCambios) {
+        for (CambioPrecio cambio : pilaCambios.toList()) {
             String fechaCambio = cambio.getFechaHora();
             if (fechaCambio.compareTo(fechaInicio) >= 0 && fechaCambio.compareTo(fechaFin) <= 0) {
                 resultados.add(cambio);
@@ -332,7 +324,7 @@ public class HistorialCambiosPrecio {
             // Contar productos modificados
             Map<Integer, Integer> contadorProductos = new HashMap<>();
             
-            for (CambioPrecio cambio : historial.pilaCambios) {
+            for (CambioPrecio cambio : historial.pilaCambios.toList()) {
                 // Contar aumentos/disminuciones
                 if (cambio.getPrecioNuevo() > cambio.getPrecioAnterior()) {
                     aumentos++;
@@ -364,7 +356,7 @@ public class HistorialCambiosPrecio {
             
             // Buscar el producto más modificado
             if (idProductoMasModificado > 0) {
-                for (CambioPrecio cambio : historial.pilaCambios) {
+                for (CambioPrecio cambio : historial.pilaCambios.toList()) {
                     if (cambio.getProducto().getIdProducto() == idProductoMasModificado) {
                         productoMasModificado = cambio.getProducto();
                         break;
@@ -428,7 +420,7 @@ public class HistorialCambiosPrecio {
         sb.append("══════════════════════════════════════\n\n");
         
         int contador = 1;
-        for (CambioPrecio cambio : pilaCambios) {
+        for (CambioPrecio cambio : pilaCambios.toList()) {
             sb.append("REGISTRO #").append(contador++).append("\n");
             sb.append(cambio.toDetailedString()).append("\n");
         }

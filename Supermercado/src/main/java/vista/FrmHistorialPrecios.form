@@ -102,9 +102,9 @@
                       <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="txtFechaInicio" min="-2" pref="175" max="-2" attributes="0"/>
-                                  <Component id="txtFechaFin" min="-2" pref="175" max="-2" attributes="0"/>
+                                  <Component id="txtFechaFin" alignment="0" min="-2" pref="175" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="73" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -119,7 +119,7 @@
                           </Group>
                           <Component id="cmbProducto" min="-2" pref="211" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="132" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -128,19 +128,27 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtFechaInicio" min="-2" pref="32" max="-2" attributes="0"/>
                           <Component id="lblTotalRegistros" min="-2" pref="32" max="-2" attributes="0"/>
                           <Component id="lblDisminuciones" alignment="0" min="-2" pref="32" max="-2" attributes="0"/>
+                          <Component id="txtFechaInicio" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtFechaFin" min="-2" pref="32" max="-2" attributes="0"/>
-                          <Component id="lblTotalCambios" min="-2" pref="32" max="-2" attributes="0"/>
-                          <Component id="lblAumentos" alignment="0" min="-2" pref="32" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="lblTotalCambios" min="-2" pref="32" max="-2" attributes="0"/>
+                                  <Component id="lblAumentos" alignment="0" min="-2" pref="32" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace pref="27" max="32767" attributes="0"/>
+                              <Component id="txtFechaFin" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
                       <Component id="cmbProducto" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="32" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -299,7 +307,7 @@
                           <Component id="btnExportar" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btnDeshacer" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="19" max="32767" attributes="0"/>
+                      <EmptySpace pref="17" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="btnVolver" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btnVerDetalles" alignment="3" min="-2" max="-2" attributes="0"/>
