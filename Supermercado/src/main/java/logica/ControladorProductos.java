@@ -1,7 +1,7 @@
 package logica;
 
 import datos.DALProductos;
-import estructuras.ArbolProductosAVL;
+import utiles.ArbolProductosAVL;
 import modelo.Producto;
 import java.util.ArrayList;
 
