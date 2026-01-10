@@ -157,13 +157,9 @@ public class FrmProductos extends javax.swing.JFrame {
         txtStockMin.setText("");
         cmbCategoria.setSelectedIndex(0);
         txtCodigo.requestFocus();
-        
-        // Deseleccionar fila de la tabla
         tblProductos.clearSelection();
-        
-        // Resetear precio anterior
         precioVentaAnterior = 0;
-        
+        this.activar(false);
         logger.fine("Campos del formulario limpiados");
     }
     
@@ -477,6 +473,7 @@ public class FrmProductos extends javax.swing.JFrame {
     private void activar(boolean estado){
         btnModificar.setEnabled(estado);
         btnEliminar.setEnabled(estado);
+        btnGuardar.setEnabled(!estado);
     }
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         if (!validarCampos()) {
@@ -541,6 +538,7 @@ public class FrmProductos extends javax.swing.JFrame {
             
             if (DALProductos.modificarProducto(idProducto, codigo, nombre, precioCosto, 
                                               precioVenta, stockActual, stockMinimo, idCategoria)) {
+                activar(false);
                 JOptionPane.showMessageDialog(this, 
                     "Producto modificado correctamente", 
                     "Éxito", 
@@ -591,6 +589,7 @@ public class FrmProductos extends javax.swing.JFrame {
                 idProducto = Integer.parseInt(txtId.getText());
                 
                 if (DALProductos.eliminarProducto(idProducto)) {
+                    activar(false);
                     JOptionPane.showMessageDialog(this, 
                         "Producto eliminado correctamente", 
                         "Éxito", 
@@ -629,8 +628,6 @@ public class FrmProductos extends javax.swing.JFrame {
                 txtId.setText(tblProductos.getValueAt(fila, 0).toString());
                 txtCodigo.setText(tblProductos.getValueAt(fila, 1).toString());
                 txtNombre.setText(tblProductos.getValueAt(fila, 2).toString());
-                
-                // Limpiar el símbolo "S/" y espacios antes de asignar
                 String precioCostoStr = tblProductos.getValueAt(fila, 3).toString().replace("S/", "").trim();
                 String precioVentaStr = tblProductos.getValueAt(fila, 4).toString().replace("S/", "").trim();
                 
@@ -638,11 +635,8 @@ public class FrmProductos extends javax.swing.JFrame {
                 txtVenta.setText(precioVentaStr);
                 txtStock.setText(tblProductos.getValueAt(fila, 5).toString());
                 txtStockMin.setText(tblProductos.getValueAt(fila, 6).toString());
-                
-                // Guardar precio anterior para comparación
                 precioVentaAnterior = Double.parseDouble(precioVentaStr);
-                
-                // Buscar y seleccionar la categoría correcta
+
                 String nombreCategoria = tblProductos.getValueAt(fila, 7).toString();
                 for (int i = 0; i < cmbCategoria.getItemCount(); i++) {
                     Categoria item = cmbCategoria.getItemAt(i);

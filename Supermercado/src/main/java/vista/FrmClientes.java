@@ -85,8 +85,8 @@ public class FrmClientes extends javax.swing.JFrame {
         txtTelefono.setText("");
         txtDireccion.setText("");
         txtNombre.requestFocus();
-        
         tblClientes.clearSelection();
+        this.activar(false);
     }
     public void setPrincipal(FrmPrincipal principal){
         this.principal = principal;
@@ -95,6 +95,7 @@ public class FrmClientes extends javax.swing.JFrame {
     public void activar(boolean estado){
         btnModificar.setEnabled(estado);
         btnEliminar.setEnabled(estado);
+       btnGuardar.setEnabled(!estado);
     }
     private boolean validarCampos() {
         nombre = txtNombre.getText().trim();
@@ -115,7 +116,7 @@ public class FrmClientes extends javax.swing.JFrame {
         }
         
         if (!dni.matches("\\d{8}")) {
-            JOptionPane.showMessageDialog(this, "El DNI debe tener 8 dígitos", "AVISO", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "El DNI debe tener 8 dígitos y no debe tener ninguna letra", "AVISO", JOptionPane.WARNING_MESSAGE);
             txtDni.requestFocus();
             return false;
         }
