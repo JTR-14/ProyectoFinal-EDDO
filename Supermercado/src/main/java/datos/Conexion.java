@@ -18,7 +18,7 @@ public class Conexion {
         Class.forName("com.mysql.cj.jdbc.Driver");
         url = "jdbc:mysql://localhost:3306/supermercado";
         user = "root";
-        password = "natali19";
+        password = "santrujillo";
         return DriverManager.getConnection(url, user, password);
     } 
 }

@@ -9,14 +9,14 @@ package modelo;
  * @author Toledo
  */
 
-public class DetalleVenta {
+public class DetalleVenta implements Comparable<DetalleVenta> {
     private int idDetalle;
     private int idVenta;
     private int idProducto;
     private Producto producto; // Referencia al producto
     private int cantidad;
     private double precioUnitario;
-    private double subtotal;
+    private double subTotal;
     
     public DetalleVenta() {}
     
@@ -25,7 +25,7 @@ public class DetalleVenta {
         this.idProducto = idProducto;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
-        this.subtotal = subtotal;
+        this.subTotal = subtotal;
     }
     
     public DetalleVenta(Producto producto, int cantidad) {
@@ -33,14 +33,14 @@ public class DetalleVenta {
         this.idProducto = producto.getIdProducto();
         this.cantidad = cantidad;
         this.precioUnitario = producto.getPrecioVenta();
-        calcularSubtotal();
+        calcularSubTotal();
     }
     
-    public void calcularSubtotal() {
+    public void calcularSubTotal() {
         if (producto != null) {
-            this.subtotal = this.cantidad * this.precioUnitario;
+            this.subTotal = this.cantidad * this.precioUnitario;
         } else {
-            this.subtotal = this.cantidad * this.precioUnitario;
+            this.subTotal = this.cantidad * this.precioUnitario;
         }
     }
     
@@ -64,23 +64,28 @@ public class DetalleVenta {
     public int getCantidad() { return cantidad; }
     public void setCantidad(int cantidad) { 
         this.cantidad = cantidad; 
-        calcularSubtotal();
+        calcularSubTotal();
     }
     
     public double getPrecioUnitario() { return precioUnitario; }
     public void setPrecioUnitario(double precioUnitario) { 
         this.precioUnitario = precioUnitario; 
-        calcularSubtotal();
+        calcularSubTotal();
     }
     
-    public double getSubtotal() { return subtotal; }
-    public void setSubtotal(double subtotal) { this.subtotal = subtotal; }
+    public double getSubTotal() { return subTotal; }
+    public void setSubtotal(double subtotal) { this.subTotal = subtotal; }
     
     @Override
     public String toString() {
         if (producto != null) {
-            return producto.getNombre() + " x" + cantidad + " = S/" + subtotal;
+            return producto.getNombre() + " x" + cantidad + " = S/" + subTotal;
         }
-        return "Producto ID: " + idProducto + " x" + cantidad + " = S/" + subtotal;
+        return "Producto ID: " + idProducto + " x" + cantidad + " = S/" + subTotal;
     }
+    
+    @Override
+public int compareTo(DetalleVenta o) {
+    return Integer.compare(this.idProducto, o.idProducto);
+}
 }

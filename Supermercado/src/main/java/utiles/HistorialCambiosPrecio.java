@@ -9,6 +9,9 @@ package utiles;
  * @author USER
  */
 import datos.Conexion;
+
+import datos.DALProductos;
+import datos.DALUsuarios;
 import modelo.Producto;
 import javax.swing.*;
 import java.sql.*;
@@ -230,7 +233,7 @@ public class HistorialCambiosPrecio {
             
             // Mostrar notificación si está habilitado
             if ((Boolean)gestor.getConfiguracion("mostrar_historial")) {
-                String mensaje = "📈 CAMBIO DE PRECIO REGISTRADO\n\n" +
+                String mensaje = " CAMBIO DE PRECIO REGISTRADO\n\n" +
                                "Producto: " + producto.getNombre() + "\n" +
                                "De: S/" + String.format("%.2f", precioAnterior) + "\n" +
                                "A: S/" + String.format("%.2f", precioNuevo) + "\n" +

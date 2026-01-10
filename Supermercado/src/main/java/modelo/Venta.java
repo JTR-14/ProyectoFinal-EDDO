@@ -12,22 +12,26 @@ package modelo;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import utiles.ListaEnlazadaDoble;
+import utiles.NodoEnDoble;
 
 public class Venta {
     private int idVenta;
     private String fecha;
+    private double subTotal;
     private double montoTotal;
     private int idUsuario;
     private int idCliente;
     private String nombreCliente;
     private String nombreUsuario;
-    private ArrayList<DetalleVenta> detalles;
+    private double igv;
+    private ListaEnlazadaDoble<DetalleVenta> detalles;
     
-    public Venta() {
-        this.detalles = new ArrayList<>();
-        // Fecha actual por defecto
-        this.fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-    }
+  public Venta() {
+    this.detalles = new ListaEnlazadaDoble<>();
+    this.fecha = LocalDateTime.now()
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+}
     
     public Venta(int idVenta, String fecha, double montoTotal, int idUsuario, int idCliente) {
         this();
@@ -39,41 +43,69 @@ public class Venta {
     }
     
     // Método para agregar detalle
-    public void agregarDetalle(DetalleVenta detalle) {
-        this.detalles.add(detalle);
-        calcularMontoTotal();
-    }
+public void agregarDetalle(DetalleVenta detalle) {
+    detalles.insertaAlFinal(detalle);
+    calcularMontoTotal();
+}
     
     // Método para eliminar detalle
-    public void eliminarDetalle(int index) {
-        if (index >= 0 && index < detalles.size()) {
-            detalles.remove(index);
-            calcularMontoTotal();
+  public void eliminarDetalle(int index) {
+    if (index < 0) return;
+
+    int i = 0;
+    NodoEnDoble<DetalleVenta> p = detalles.getPrimero();
+
+    while (p != null) {
+        if (i == index) {
+            detalles.eliminar(p.getInfo());
+            calcularSubtotal();
+            return;
         }
+        i++;
+        p = p.getSgte();
     }
+}
     
     // Método para calcular el monto total
+  public void calcularSubtotal() {
+    subTotal = 0;
+    NodoEnDoble<DetalleVenta> p = detalles.getPrimero();
+
+    while (p != null) {
+        subTotal += p.getInfo().getSubTotal();
+        p = p.getSgte();
+    }
+}
+  public void calcularIgv()
+  {
+  igv = subTotal * 0.18;
+  }
     public void calcularMontoTotal() {
-        montoTotal = 0;
-        for (DetalleVenta detalle : detalles) {
-            montoTotal += detalle.getSubtotal();
-        }
-    }
-    
+    montoTotal = 0;
+    montoTotal= subTotal+igv;
+  
+}
     // Método para verificar si hay stock disponible
-    public boolean verificarStockDisponible() {
-        for (DetalleVenta detalle : detalles) {
-            if (detalle.getProducto().getStockActual() < detalle.getCantidad()) {
-                return false;
-            }
+public boolean verificarStockDisponible() {
+    NodoEnDoble<DetalleVenta> p = detalles.getPrimero();
+
+    while (p != null) {
+        DetalleVenta d = p.getInfo();
+        if (d.getProducto().getStockActual() < d.getCantidad()) {
+            return false;
         }
-        return true;
+        p = p.getSgte();
     }
+    return true;
+}
+
     
     // Getters y Setters
     public int getIdVenta() { return idVenta; }
     public void setIdVenta(int idVenta) { this.idVenta = idVenta; }
-    
+        public double getIgv() { return igv; }
+    public void setIgv(double igv) 
+        { this.igv = igv; }
     public String getFecha() { return fecha; }
     public void setFecha(String fecha) { this.fecha = fecha; }
     
@@ -92,10 +124,20 @@ public class Venta {
     public String getNombreUsuario() { return nombreUsuario; }
     public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
     
-    public ArrayList<DetalleVenta> getDetalles() { return detalles; }
-    public void setDetalles(ArrayList<DetalleVenta> detalles) { 
+    public ListaEnlazadaDoble<DetalleVenta> getDetalles() 
+    { return detalles; }
+    
+    public void setDetalles(ListaEnlazadaDoble<DetalleVenta> detalles) { 
         this.detalles = detalles; 
         calcularMontoTotal();
+    }
+
+    public double getSubTotal() {
+        return subTotal;
+    }
+
+    public void setSubTotal(double subTotal) {
+        this.subTotal = subTotal;
     }
     
     @Override
