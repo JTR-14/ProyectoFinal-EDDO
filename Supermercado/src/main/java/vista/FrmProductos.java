@@ -360,10 +360,12 @@ public class FrmProductos extends javax.swing.JFrame {
 
         btnModificar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnModificar.setText("MODIFICAR");
+        btnModificar.setEnabled(false);
         btnModificar.addActionListener(this::btnModificarActionPerformed);
 
         btnEliminar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnEliminar.setText("ELIMINAR");
+        btnEliminar.setEnabled(false);
         btnEliminar.addActionListener(this::btnEliminarActionPerformed);
 
         btnLimpiar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
@@ -379,17 +381,17 @@ public class FrmProductos extends javax.swing.JFrame {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(39, 39, 39)
+                .addGap(27, 27, 27)
                 .addComponent(btnGuardar)
-                .addGap(18, 18, 18)
+                .addGap(36, 36, 36)
                 .addComponent(btnModificar)
-                .addGap(38, 38, 38)
+                .addGap(32, 32, 32)
                 .addComponent(btnEliminar)
                 .addGap(32, 32, 32)
                 .addComponent(btnLimpiar)
-                .addGap(26, 26, 26)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
                 .addComponent(btnVolver)
-                .addContainerGap(42, Short.MAX_VALUE))
+                .addGap(32, 32, 32))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -471,7 +473,10 @@ public class FrmProductos extends javax.swing.JFrame {
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
         limpiar();
     }//GEN-LAST:event_btnLimpiarActionPerformed
-
+    private void activar(boolean estado){
+        btnModificar.setEnabled(estado);
+        btnEliminar.setEnabled(estado);
+    }
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         if (!validarCampos()) {
             return;
@@ -539,6 +544,7 @@ public class FrmProductos extends javax.swing.JFrame {
                 logger.info("Producto modificado - ID: " + idProducto + " - Nombre: " + nombre);
                 llenarTabla();
                 limpiar();
+                this.activar(false);
             } else {
                 JOptionPane.showMessageDialog(this, 
                     "No se pudo modificar el producto", 
@@ -588,6 +594,7 @@ public class FrmProductos extends javax.swing.JFrame {
                     logger.info("Producto eliminado - ID: " + idProducto);
                     llenarTabla();
                     limpiar();
+                    this.activar(false);
                 } else {
                     JOptionPane.showMessageDialog(this, 
                         "No se pudo eliminar el producto (puede tener ventas asociadas)", 
@@ -614,6 +621,7 @@ public class FrmProductos extends javax.swing.JFrame {
         
         if (fila >= 0) {
             try {
+                this.activar(true);
                 txtId.setText(tblProductos.getValueAt(fila, 0).toString());
                 txtCodigo.setText(tblProductos.getValueAt(fila, 1).toString());
                 txtNombre.setText(tblProductos.getValueAt(fila, 2).toString());

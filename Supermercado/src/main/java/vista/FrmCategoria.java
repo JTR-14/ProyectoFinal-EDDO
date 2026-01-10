@@ -65,10 +65,12 @@ public class FrmCategoria extends javax.swing.JFrame {
 
         btnModificar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnModificar.setText("MODIFICAR");
+        btnModificar.setEnabled(false);
         btnModificar.addActionListener(this::btnModificarActionPerformed);
 
         btnEliminar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnEliminar.setText("ELIMINAR");
+        btnEliminar.setEnabled(false);
         btnEliminar.addActionListener(this::btnEliminarActionPerformed);
 
         btnLimpiar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
@@ -94,7 +96,7 @@ public class FrmCategoria extends javax.swing.JFrame {
                 .addComponent(btnLimpiar)
                 .addGap(18, 18, 18)
                 .addComponent(btnVolver)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -144,15 +146,13 @@ public class FrmCategoria extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2)
                     .addComponent(txtCategorias, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(68, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2))
                 .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 494, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -229,7 +229,10 @@ public class FrmCategoria extends javax.swing.JFrame {
 
         tblCategorias.clearSelection();
     }
-    
+    private void activar(boolean estado){
+        btnModificar.setEnabled(estado);
+        btnEliminar.setEnabled(estado);
+    }
     private boolean validarCampos() {
         categoria = txtCategorias.getText().trim();
         
@@ -311,6 +314,7 @@ public class FrmCategoria extends javax.swing.JFrame {
                 logger.info("Categoría modificada - ID: " + idCategoria + " - Nombre: " + categoria);
                 llenarTabla();
                 limpiar();
+                this.activar(false);
             } else {
                 JOptionPane.showMessageDialog(this, 
                     "No se pudo modificar la categoría", 
@@ -360,6 +364,7 @@ public class FrmCategoria extends javax.swing.JFrame {
                     logger.info("Categoría eliminada - ID: " + idCategoria);
                     llenarTabla();
                     limpiar();
+                    this.activar(false);
                 } else {
                     JOptionPane.showMessageDialog(this, 
                         "No se pudo eliminar la categoría (puede tener productos asociados)", 
@@ -390,6 +395,7 @@ public class FrmCategoria extends javax.swing.JFrame {
         
         if (fila >= 0) {
             try {
+                this.activar(true);
                 txtId.setText(tblCategorias.getValueAt(fila, 0).toString());
                 txtCategorias.setText(tblCategorias.getValueAt(fila, 1).toString());
                 

@@ -59,7 +59,6 @@ public class FrmClientes extends javax.swing.JFrame {
             
             tblClientes.setModel(modelo);
             
-            // Ajustar ancho de columnas
             if (tblClientes.getColumnModel().getColumnCount() > 0) {
                 tblClientes.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
                 tblClientes.getColumnModel().getColumn(1).setPreferredWidth(150); // Nombre
@@ -87,11 +86,15 @@ public class FrmClientes extends javax.swing.JFrame {
         txtDireccion.setText("");
         txtNombre.requestFocus();
         
-        // Deseleccionar fila de la tabla
         tblClientes.clearSelection();
     }
     public void setPrincipal(FrmPrincipal principal){
         this.principal = principal;
+    }
+    
+    public void activar(boolean estado){
+        btnModificar.setEnabled(estado);
+        btnEliminar.setEnabled(estado);
     }
     private boolean validarCampos() {
         nombre = txtNombre.getText().trim();
@@ -215,10 +218,12 @@ public class FrmClientes extends javax.swing.JFrame {
 
         btnModificar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnModificar.setText("MODIFICAR");
+        btnModificar.setEnabled(false);
         btnModificar.addActionListener(this::btnModificarActionPerformed);
 
         btnEliminar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnEliminar.setText("ELIMINAR");
+        btnEliminar.setEnabled(false);
         btnEliminar.addActionListener(this::btnEliminarActionPerformed);
 
         btnLimpiar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
@@ -234,17 +239,17 @@ public class FrmClientes extends javax.swing.JFrame {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(31, 31, 31)
+                .addGap(22, 22, 22)
                 .addComponent(btnGuardar)
-                .addGap(38, 38, 38)
+                .addGap(33, 33, 33)
                 .addComponent(btnModificar)
-                .addGap(43, 43, 43)
+                .addGap(42, 42, 42)
                 .addComponent(btnEliminar)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
                 .addComponent(btnLimpiar)
-                .addGap(18, 18, 18)
+                .addGap(36, 36, 36)
                 .addComponent(btnVolver)
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addGap(22, 22, 22))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -289,11 +294,8 @@ public class FrmClientes extends javax.swing.JFrame {
                 .addGap(26, 26, 26)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(datos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 573, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 10, Short.MAX_VALUE)))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -380,6 +382,7 @@ public class FrmClientes extends javax.swing.JFrame {
                 logger.info("Cliente modificado - ID: " + id + " - Nombre: " + nombre);
                 llenarTabla();
                 limpiar();
+                this.activar(false);
             } else {
                 JOptionPane.showMessageDialog(this, 
                     "No se pudo modificar el cliente", 
@@ -427,6 +430,7 @@ public class FrmClientes extends javax.swing.JFrame {
                     logger.info("Cliente eliminado - ID: " + id);
                     llenarTabla();
                     limpiar();
+                    this.activar(false);
                 } else {
                     JOptionPane.showMessageDialog(this, 
                         "No se pudo eliminar el cliente (puede tener ventas asociadas)", 
@@ -463,7 +467,7 @@ public class FrmClientes extends javax.swing.JFrame {
                 txtDni.setText(tblClientes.getValueAt(fila, 2).toString());
                 txtTelefono.setText(tblClientes.getValueAt(fila, 3).toString());
                 txtDireccion.setText(tblClientes.getValueAt(fila, 4).toString());
-                
+                this.activar(true);
                 logger.log(Level.FINE, "Cliente seleccionado - ID: {0}", txtId.getText());
             } catch (Exception ex) {
                 logger.log(Level.WARNING, "Error al cargar datos del cliente seleccionado: {0}", ex.getMessage());
