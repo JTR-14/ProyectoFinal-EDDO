@@ -119,7 +119,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         mniHistorialPrecios.addActionListener(this::mniHistorialPreciosActionPerformed);
         mnuHistoriales.add(mniHistorialPrecios);
 
-        mniPedidosOnline.setText("PEDIDOS ONLINE");
+        mniPedidosOnline.setText("PEDIDOS");
         mniPedidosOnline.addActionListener(this::mniPedidosOnlineActionPerformed);
         mnuHistoriales.add(mniPedidosOnline);
 

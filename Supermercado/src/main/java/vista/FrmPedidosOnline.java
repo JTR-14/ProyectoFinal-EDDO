@@ -16,10 +16,7 @@ import utiles.GestorSistema;
 import utiles.ListaEnlazadaDoble;
 import utiles.NodoEnDoble;
 
-/**
- *
- * @author Toledo
- */
+
 public class FrmPedidosOnline extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmPedidosOnline.class.getName());
     private GestorSistema gestor;
@@ -111,20 +108,17 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
             listaClientes = DALCliente.obtenerClientes();
             cmbCliente.removeAllItems();
             
-            // 1. AGREGAR PLACEHOLDER
             cmbCliente.addItem("-- Seleccione Cliente --");
-            
-            // 2. Lista auxiliar sin CLIENTE GENERAL
+           
             ArrayList<Cliente> clientesFiltrados = new ArrayList<>();
             
             for (Cliente cliente : listaClientes) {
-                if (cliente.getIdCliente() != 1) { // Excluir CLIENTE GENERAL
+                if (cliente.getIdCliente() != 1) { 
                     clientesFiltrados.add(cliente);
-                    cmbCliente.addItem(cliente.getNombre() + " - DNI: " + cliente.getDni());
+                    cmbCliente.addItem(cliente.getNombre());
                 }
             }
             
-            // 3. Reemplazar listaClientes con la filtrada
             listaClientes = clientesFiltrados;
             
             logger.info("Clientes cargados para pedidos online: " + listaClientes.size());
@@ -150,7 +144,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         }
         
         try {
-            Producto producto = DALProductos.buscarPorCodigo(codigo);
+            Producto producto = ControladorProductos.buscarPorCodigo(codigo);
             if (producto != null) {
                 if (producto.getStockActual() <= 0) {
                     JOptionPane.showMessageDialog(this, 
@@ -573,30 +567,29 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         datos = new javax.swing.JPanel();
         txtCodigo = new javax.swing.JTextField();
-        txtDireccion = new javax.swing.JTextField();
-        txtTelefono = new javax.swing.JTextField();
-        txtTotal = new javax.swing.JTextField();
-        cmbCliente = new javax.swing.JComboBox<>();
         lblEstadoCola = new javax.swing.JLabel();
         lblProductosPedido = new javax.swing.JLabel();
-        txtIGV = new javax.swing.JTextField();
-        txtNotas = new javax.swing.JTextField();
-        txtSubtotal = new javax.swing.JTextField();
-        cmbMetodoPago = new javax.swing.JComboBox<>();
+        btnAgregarProducto = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         btnGuardar = new javax.swing.JButton();
-        btnCancelarCola = new javax.swing.JButton();
-        btnAgregarProducto = new javax.swing.JButton();
-        btnBuscar = new javax.swing.JButton();
         btnVolver = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
         btnProcesar = new javax.swing.JButton();
-        btnVerDetalles = new javax.swing.JButton();
         btnCancelarPedido = new javax.swing.JButton();
+        btnCancelarCola = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblDetalles = new javax.swing.JTable();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        txtSubtotal = new javax.swing.JTextField();
+        txtIGV = new javax.swing.JTextField();
+        txtTotal = new javax.swing.JTextField();
+        jPanel3 = new javax.swing.JPanel();
+        cmbCliente = new javax.swing.JComboBox<>();
+        txtTelefono = new javax.swing.JTextField();
+        txtDireccion = new javax.swing.JTextField();
+        cmbMetodoPago = new javax.swing.JComboBox<>();
+        txtNotas = new javax.swing.JTextField();
+        jScrollPane3 = new javax.swing.JScrollPane();
         tblColaPedidos = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -605,38 +598,18 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
         datos.setBackground(new java.awt.Color(243, 243, 243));
-        datos.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Datos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 14))); // NOI18N
+        datos.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Productos:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 14))); // NOI18N
 
         txtCodigo.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         txtCodigo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Código:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
-
-        txtDireccion.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        txtDireccion.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Dirección:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
-
-        txtTelefono.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        txtTelefono.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Teléfono:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
-
-        txtTotal.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        txtTotal.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Total:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
-
-        cmbCliente.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        cmbCliente.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Cliente:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
 
         lblEstadoCola.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         lblProductosPedido.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        txtIGV.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        txtIGV.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "IGV:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
-
-        txtNotas.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        txtNotas.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Notas:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
-
-        txtSubtotal.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        txtSubtotal.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subtotal", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
-
-        cmbMetodoPago.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        cmbMetodoPago.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Método pago:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+        btnAgregarProducto.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        btnAgregarProducto.setText("AGREGAR PRODUCTO");
+        btnAgregarProducto.addActionListener(this::btnAgregarProductoActionPerformed);
 
         javax.swing.GroupLayout datosLayout = new javax.swing.GroupLayout(datos);
         datos.setLayout(datosLayout);
@@ -644,137 +617,89 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
             datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(datosLayout.createSequentialGroup()
                 .addGap(35, 35, 35)
-                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(txtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(30, 30, 30)
-                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtSubtotal, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(56, 56, 56)
-                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtNotas, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtIGV, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(txtCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(62, 62, 62)
+                .addComponent(btnAgregarProducto)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblEstadoCola, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblProductosPedido, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(43, 43, 43)
-                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cmbCliente, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmbMetodoPago, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(21, 21, 21))
+                .addComponent(lblEstadoCola, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(102, 102, 102)
+                .addComponent(lblProductosPedido, javax.swing.GroupLayout.PREFERRED_SIZE, 224, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(125, 125, 125))
         );
         datosLayout.setVerticalGroup(
             datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(datosLayout.createSequentialGroup()
-                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(txtCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(datosLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(txtCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txtDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txtIGV, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(lblEstadoCola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(cmbCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(35, 35, 35)
-                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(datosLayout.createSequentialGroup()
-                        .addComponent(cmbMetodoPago, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(datosLayout.createSequentialGroup()
-                        .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 2, Short.MAX_VALUE)
+                        .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(lblProductosPedido, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txtNotas, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txtSubtotal, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
-                        .addComponent(txtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(27, 27, 27))))
+                            .addComponent(lblEstadoCola, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(2, 2, 2))
+                    .addComponent(btnAgregarProducto, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(138, 138, 138))
         );
 
         jLabel1.setFont(new java.awt.Font("Montserrat ExtraBold", 0, 24)); // NOI18N
-        jLabel1.setText("Pedidos Online");
+        jLabel1.setText("Pedidos");
 
         btnGuardar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnGuardar.setText("GUARDAR");
+        btnGuardar.setText("GUARDAR COMPRA");
         btnGuardar.addActionListener(this::btnGuardarActionPerformed);
-
-        btnCancelarCola.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnCancelarCola.setText("CANCELAR COLA");
-        btnCancelarCola.addActionListener(this::btnCancelarColaActionPerformed);
-
-        btnAgregarProducto.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnAgregarProducto.setText("AGREGAR PRODUCTO");
-        btnAgregarProducto.addActionListener(this::btnAgregarProductoActionPerformed);
-
-        btnBuscar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnBuscar.setText("BUSCAR");
-        btnBuscar.addActionListener(this::btnBuscarActionPerformed);
 
         btnVolver.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnVolver.setText("VOLVER");
         btnVolver.addActionListener(this::btnVolverActionPerformed);
 
         btnEliminar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnEliminar.setText("ELIMINAR");
+        btnEliminar.setText("ELIMINAR PRODUCTO");
         btnEliminar.addActionListener(this::btnEliminarActionPerformed);
 
         btnProcesar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnProcesar.setText("PROCESAR");
+        btnProcesar.setText("PROCESAR SIGUIENTE PEDIDO");
         btnProcesar.addActionListener(this::btnProcesarActionPerformed);
-
-        btnVerDetalles.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnVerDetalles.setText("VER DETALLES");
-        btnVerDetalles.addActionListener(this::btnVerDetallesActionPerformed);
 
         btnCancelarPedido.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnCancelarPedido.setText("CANCELAR PEDIDO");
         btnCancelarPedido.addActionListener(this::btnCancelarPedidoActionPerformed);
+
+        btnCancelarCola.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        btnCancelarCola.setText("CANCELAR COLA");
+        btnCancelarCola.addActionListener(this::btnCancelarColaActionPerformed);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(39, 39, 39)
+                .addGap(28, 28, 28)
                 .addComponent(btnGuardar)
-                .addGap(11, 11, 11)
-                .addComponent(btnBuscar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnAgregarProducto)
-                .addGap(18, 18, 18)
+                .addGap(47, 47, 47)
                 .addComponent(btnEliminar)
-                .addGap(18, 18, 18)
+                .addGap(26, 26, 26)
                 .addComponent(btnProcesar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnVerDetalles)
+                .addGap(32, 32, 32)
+                .addComponent(btnCancelarPedido)
                 .addGap(18, 18, 18)
                 .addComponent(btnCancelarCola)
                 .addGap(34, 34, 34)
-                .addComponent(btnCancelarPedido)
-                .addGap(35, 35, 35)
                 .addComponent(btnVolver)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(31, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(32, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(21, 21, 21)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnGuardar)
-                    .addComponent(btnAgregarProducto)
-                    .addComponent(btnVolver)
                     .addComponent(btnEliminar)
                     .addComponent(btnProcesar)
-                    .addComponent(btnVerDetalles)
                     .addComponent(btnCancelarPedido)
-                    .addComponent(btnBuscar)
+                    .addComponent(btnVolver)
                     .addComponent(btnCancelarCola))
-                .addGap(21, 21, 21))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         tblDetalles.setModel(new javax.swing.table.DefaultTableModel(
@@ -795,7 +720,71 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(tblDetalles);
 
-        tblColaPedidos.setBorder(javax.swing.BorderFactory.createTitledBorder("Cola de pedidos"));
+        txtSubtotal.setEditable(false);
+        txtSubtotal.setBackground(new java.awt.Color(255, 255, 255));
+        txtSubtotal.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        txtSubtotal.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subtotal", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+
+        txtIGV.setEditable(false);
+        txtIGV.setBackground(new java.awt.Color(255, 255, 255));
+        txtIGV.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        txtIGV.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "IGV:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+
+        txtTotal.setEditable(false);
+        txtTotal.setBackground(new java.awt.Color(255, 255, 255));
+        txtTotal.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        txtTotal.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Total:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Datos del Cliente:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+
+        cmbCliente.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        cmbCliente.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Cliente:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+        cmbCliente.addActionListener(this::cmbClienteActionPerformed);
+
+        txtTelefono.setEditable(false);
+        txtTelefono.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        txtTelefono.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Teléfono:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+
+        txtDireccion.setEditable(false);
+        txtDireccion.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        txtDireccion.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Dirección:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+
+        cmbMetodoPago.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        cmbMetodoPago.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Método pago:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+
+        txtNotas.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        txtNotas.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Notas:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(cmbCliente, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30)
+                .addComponent(txtDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(27, 27, 27)
+                .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(39, 39, 39)
+                .addComponent(cmbMetodoPago, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 65, Short.MAX_VALUE)
+                .addComponent(txtNotas, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(49, 49, 49))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cmbCliente, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbMetodoPago, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtNotas, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(32, Short.MAX_VALUE))
+        );
+
         tblColaPedidos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {},
@@ -812,42 +801,64 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
                 tblColaPedidosMouseClicked(evt);
             }
         });
-        jScrollPane2.setViewportView(tblColaPedidos);
+        jScrollPane3.setViewportView(tblColaPedidos);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(289, 289, 289)
-                .addComponent(jLabel1)
-                .addGap(26, 26, 26))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(26, 26, 26)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(datos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 689, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 540, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(0, 20, Short.MAX_VALUE))
+                        .addGap(658, 658, 658)
+                        .addComponent(txtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(42, 42, 42)
+                        .addComponent(txtSubtotal, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(42, 42, 42)
+                        .addComponent(txtIGV, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(52, 52, 52)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 31, Short.MAX_VALUE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(datos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(26, 26, 26)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 681, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 553, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addGap(570, 570, 570))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(12, 12, 12)
+                .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(datos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(31, 31, 31)
+                .addComponent(datos, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(33, 33, 33)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                .addGap(44, 44, 44)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(31, 31, 31)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtSubtotal, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtIGV, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -866,10 +877,6 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
-        buscarProducto();
-    }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         if (cmbCliente.getSelectedIndex() == 0) {
@@ -954,7 +961,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
                                "Total: " + txtTotal.getText() + "\n" +
                                "Posición en cola: " + gestor.getColaPedidos().cantidadPedidosPendientes() + "\n" +
                                "Estado: " + pedidoActual.getEstado() + "\n\n" +
-                               "El pedido será procesado en orden de llegada (FIFO).";
+                               "El pedido será procesado en orden de llegada.";
                 
                 JOptionPane.showMessageDialog(this,
                     mensaje,
@@ -1030,10 +1037,6 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         this.setVisible(false);
     }//GEN-LAST:event_btnVolverActionPerformed
 
-    private void tblColaPedidosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblColaPedidosMouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tblColaPedidosMouseClicked
-
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         int fila = tblDetalles.getSelectedRow();
         if (fila >= 0) {
@@ -1060,31 +1063,6 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         procesarSiguientePedido();
     }//GEN-LAST:event_btnProcesarActionPerformed
 
-    private void btnVerDetallesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVerDetallesActionPerformed
-        if (!pedidoActual.getDetalles().isEmpty()) {
-            int confirm = JOptionPane.showConfirmDialog(this,
-                "¿Cancelar pedido actual?\n\n" +
-                "Se perderán todos los productos agregados (" + 
-                pedidoActual.getDetalles().size() + " productos).",
-                "Confirmar Cancelación",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE);
-            
-            if (confirm == JOptionPane.YES_OPTION) {
-                reiniciarPedido();
-                JOptionPane.showMessageDialog(this,
-                    "Pedido actual cancelado",
-                    "Cancelación Exitosa",
-                    JOptionPane.INFORMATION_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(this,
-                "No hay productos en el pedido para cancelar",
-                "Pedido Vacío",
-                JOptionPane.INFORMATION_MESSAGE);
-        }
-    }//GEN-LAST:event_btnVerDetallesActionPerformed
-
     private void btnCancelarPedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarPedidoActionPerformed
         if (!pedidoActual.getDetalles().isEmpty()) {
             int confirm = JOptionPane.showConfirmDialog(this,
@@ -1110,16 +1088,37 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnCancelarPedidoActionPerformed
 
+    private void cmbClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbClienteActionPerformed
+        int indiceSeleccionado = cmbCliente.getSelectedIndex();
+
+    if (indiceSeleccionado > 0 && listaClientes != null && !listaClientes.isEmpty()) {
+        try {
+            Cliente clienteElegido = listaClientes.get(indiceSeleccionado - 1);
+            txtDireccion.setText(clienteElegido.getDireccion());
+            txtTelefono.setText(clienteElegido.getTelefono());
+        } catch (IndexOutOfBoundsException e) {
+            txtDireccion.setText("");
+            txtTelefono.setText("");
+        }
+    } else {
+        txtDireccion.setText("");
+        txtTelefono.setText("");
+    }
+    }//GEN-LAST:event_cmbClienteActionPerformed
+
+    private void tblColaPedidosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblColaPedidosMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tblColaPedidosMouseClicked
+
+// Evento para detectar cambio de selección en el Combo
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAgregarProducto;
-    private javax.swing.JButton btnBuscar;
     private javax.swing.JButton btnCancelarCola;
     private javax.swing.JButton btnCancelarPedido;
     private javax.swing.JButton btnEliminar;
     private javax.swing.JButton btnGuardar;
     private javax.swing.JButton btnProcesar;
-    private javax.swing.JButton btnVerDetalles;
     private javax.swing.JButton btnVolver;
     private javax.swing.JComboBox<String> cmbCliente;
     private javax.swing.JComboBox<String> cmbMetodoPago;
@@ -1127,8 +1126,9 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel lblEstadoCola;
     private javax.swing.JLabel lblProductosPedido;
     private javax.swing.JTable tblColaPedidos;
