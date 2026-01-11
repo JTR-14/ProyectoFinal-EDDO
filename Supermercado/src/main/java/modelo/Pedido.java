@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 public class Pedido {
     private int idPedido;
+    private String clientePrueba;
     private Cliente cliente;
     private ArrayList<DetallePedido> detalles;
     private String estado; // "PENDIENTE", "EN_PROCESO", "COMPLETADO", "CANCELADO"
@@ -23,6 +24,8 @@ public class Pedido {
     private String metodoPago; // "EFECTIVO", "TARJETA", "TRANSFERENCIA"
     private String notas;
     
+    
+ 
     public Pedido() {
         this.detalles = new ArrayList<>();
         this.fechaHora = LocalDateTime.now();
@@ -131,6 +134,10 @@ public class Pedido {
     public Cliente getCliente() { return cliente; }
     public void setCliente(Cliente cliente) { this.cliente = cliente; }
     
+    public void setClientes(String clientePrueba){
+        this.clientePrueba = clientePrueba;
+    }
+    public String getClientes() { return clientePrueba; }
     public ArrayList<DetallePedido> getDetalles() { return detalles; }
     public void setDetalles(ArrayList<DetallePedido> detalles) { this.detalles = detalles; }
     
@@ -151,6 +158,8 @@ public class Pedido {
     
     public String getNotas() { return notas; }
     public void setNotas(String notas) { this.notas = notas; }
+    
+    
     
     @Override
     public String toString() {
