@@ -23,7 +23,7 @@ import logica.ControladorProductos;
  * @author tempano
  */
 public class FrmVentas extends javax.swing.JFrame {
- private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmVentas.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmVentas.class.getName());
     private GestorSistema gestor;
     private Venta ventaActual;
     private DefaultTableModel modeloDetalles;
@@ -38,7 +38,6 @@ public class FrmVentas extends javax.swing.JFrame {
         idUsuarioActual = gestor.getUsuarioActual().getIdUsuario();
         clienteSeleccionado = null;
 
-        // IMPORTANTE: Primero cargar clientes, luego inicializar venta
         cargarClientes();
         inicializarVenta();
         inicializarTablaDetalles();
@@ -51,7 +50,7 @@ public class FrmVentas extends javax.swing.JFrame {
         actualizarTotales();
         clienteSeleccionado = null;
 
-        // SOLO seleccionar índice 0 si hay elementos
+        // SOLO seleccionar índice 0 si hay elementos (placeholder)
         if (cmbCliente1.getItemCount() > 0) {
             cmbCliente1.setSelectedIndex(0);
         }
@@ -67,9 +66,8 @@ public class FrmVentas extends javax.swing.JFrame {
         modeloDetalles = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Tabla no editable
+                return false;
             }
-
         };
 
         modeloDetalles.addColumn("Código");
@@ -80,7 +78,6 @@ public class FrmVentas extends javax.swing.JFrame {
         modeloDetalles.addColumn("Subtotal");
 
         tblDetalles.setModel(modeloDetalles);
-
     }
 
     private void cargarClientes() {
@@ -88,14 +85,13 @@ public class FrmVentas extends javax.swing.JFrame {
             listaClientes = DALCliente.obtenerClientes();
             cmbCliente1.removeAllItems();
 
-            // AGREGAR ESTA LÍNEA PARA CLIENTE POR DEFECTO
+            // AGREGAR CLIENTE POR DEFECTO
             cmbCliente1.addItem("-- Seleccione Cliente --");
 
             for (Cliente cliente : listaClientes) {
                 cmbCliente1.addItem(cliente.getNombre() + " - DNI: " + cliente.getDni());
             }
 
-            // Si no hay clientes, mostrar mensaje
             if (listaClientes.isEmpty()) {
                 logger.warning("No hay clientes registrados en la base de datos");
                 cmbCliente1.addItem("NO HAY CLIENTES REGISTRADOS");
@@ -110,7 +106,6 @@ public class FrmVentas extends javax.swing.JFrame {
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
 
-            // Asegurar que el combo tenga al menos un elemento
             cmbCliente1.addItem("-- Error al cargar clientes --");
             cmbCliente1.setEnabled(false);
         }
@@ -141,7 +136,6 @@ public class FrmVentas extends javax.swing.JFrame {
         try {
             Producto producto = ControladorProductos.buscarPorCodigo(codigo);
             if (producto != null) {
-                // Verificar stock
                 if (producto.getStockActual() <= 0) {
                     JOptionPane.showMessageDialog(this,
                             "Producto sin stock disponible",
@@ -152,7 +146,6 @@ public class FrmVentas extends javax.swing.JFrame {
                     return;
                 }
 
-                // Verificar stock mínimo
                 if (producto.getStockActual() <= producto.getStockMinimo()) {
                     JOptionPane.showMessageDialog(this,
                             "ALERTA: Stock bajo (" + producto.getStockActual() + " unidades)\n"
@@ -161,7 +154,6 @@ public class FrmVentas extends javax.swing.JFrame {
                             JOptionPane.WARNING_MESSAGE);
                 }
 
-                // Verificar si ya está en la venta
                 int indiceExistente = buscarProductoEnVenta(producto.getIdProducto());
                 if (indiceExistente >= 0) {
 
@@ -193,7 +185,6 @@ public class FrmVentas extends javax.swing.JFrame {
                     actualizarFilaTabla(indiceExistente, detalle, producto);
 
                 } else {
-                    // Agregar nuevo producto
                     DetalleVenta nuevoDetalle = new DetalleVenta(producto, numero);
                     ventaActual.agregarDetalle(nuevoDetalle);
                     agregarFilaTabla(nuevoDetalle, producto);
@@ -252,22 +243,15 @@ public class FrmVentas extends javax.swing.JFrame {
     }
 
     private void actualizarTotales() {
-        ventaActual.calcularSubtotal();
-        ventaActual.calcularIgv();
-        ventaActual.calcularMontoTotal();
+        ventaActual.calcularMontoTotal(); // Este método ahora calcula todo
 
         txtSubtotal.setText(String.format("S/ %.2f", ventaActual.getSubTotal()));
-
         txtIGV.setText(String.format("S/ %.2f", ventaActual.getIgv()));
-
         txtTotal.setText(String.format("S/ %.2f", ventaActual.getMontoTotal()));
 
-        //usando lista enlazada doble
         int totalProductos = 0;
-
         if (ventaActual.getDetalles() != null && !ventaActual.getDetalles().esVacia()) {
             NodoEnDoble<DetalleVenta> p = ventaActual.getDetalles().getPrimero();
-
             while (p != null) {
                 totalProductos += p.getInfo().getCantidad();
                 p = p.getSgte();
@@ -278,25 +262,20 @@ public class FrmVentas extends javax.swing.JFrame {
     }
 
     private void reiniciarVenta() {
-        // Guardar cliente seleccionado si existe
         int clienteIndex = cmbCliente1.getSelectedIndex();
 
-        // Reiniciar todo
         ventaActual = new Venta();
         ventaActual.setIdUsuario(idUsuarioActual);
         modeloDetalles.setRowCount(0);
 
-        // Restaurar cliente si había uno seleccionado y hay elementos
         if (clienteIndex > 0 && cmbCliente1.getItemCount() > clienteIndex) {
             cmbCliente1.setSelectedIndex(clienteIndex);
         } else if (cmbCliente1.getItemCount() > 0) {
             cmbCliente1.setSelectedIndex(0);
         }
 
-        // Actualizar número de venta
         actualizarNumeroVenta();
         actualizarTotales();
-
         txtCodigo1.requestFocus();
     }
 
@@ -598,8 +577,7 @@ public class FrmVentas extends javax.swing.JFrame {
             cmbCliente1.requestFocus();
             return;
         }
-
-        // Validar que haya productos
+        
         if (ventaActual.getDetalles().esVacia()) {
             JOptionPane.showMessageDialog(this,
                 "Agregue productos a la venta",
@@ -608,8 +586,7 @@ public class FrmVentas extends javax.swing.JFrame {
             txtCodigo1.requestFocus();
             return;
         }
-
-        // Validar stock (segunda validación por seguridad)
+        
         if (!ventaActual.verificarStockDisponible()) {
             JOptionPane.showMessageDialog(this,
                 "Stock insuficiente para uno o más productos.\n"
@@ -618,32 +595,94 @@ public class FrmVentas extends javax.swing.JFrame {
                 JOptionPane.ERROR_MESSAGE);
             return;
         }
-
+        
         try {
-            // Obtener cliente seleccionado
-            int indiceCliente = cmbCliente1.getSelectedIndex() - 1;
-            clienteSeleccionado = listaClientes.get(indiceCliente);
-            ventaActual.setIdCliente(clienteSeleccionado.getIdCliente());
-
-            // Registrar venta en base de datos (esto actualiza el stock automáticamente)
+            // MANEJO CORREGIDO DEL CLIENTE
+            int indiceCliente = cmbCliente1.getSelectedIndex() - 1; // Restar 1 por el placeholder
+            
+            if (indiceCliente >= 0 && indiceCliente < listaClientes.size()) {
+                clienteSeleccionado = listaClientes.get(indiceCliente);
+                ventaActual.setIdCliente(clienteSeleccionado.getIdCliente());
+                ventaActual.setNombreCliente(clienteSeleccionado.getNombre());
+            } else {
+                // Si hay problema, usar cliente general
+                JOptionPane.showMessageDialog(this,
+                    "Cliente inválido seleccionado. Usando CLIENTE GENERAL.",
+                    "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
+                ventaActual.setIdCliente(1); // ID del CLIENTE GENERAL en la BD
+                clienteSeleccionado = new Cliente(1, "CLIENTE GENERAL", "00000000", "000000000", "NO ESPECIFICADA");
+                ventaActual.setNombreCliente("CLIENTE GENERAL");
+            }
+        
+            // Asegurar que el árbol de productos esté cargado antes de registrar
+            ControladorProductos.cargarDatosAlArbol();
+            
+            // Verificar stock nuevamente antes de registrar
+            NodoEnDoble<DetalleVenta> p = ventaActual.getDetalles().getPrimero();
+            StringBuilder productosSinStock = new StringBuilder();
+            boolean hayStock = true;
+            
+            while (p != null) {
+                DetalleVenta detalle = p.getInfo();
+                Producto producto = ControladorProductos.buscarPorCodigo(detalle.getProducto().getCodigo());
+                
+                if (producto == null) {
+                    productosSinStock.append("- ").append(detalle.getProducto().getNombre())
+                                   .append(": Producto no encontrado\n");
+                    hayStock = false;
+                } else if (producto.getStockActual() < detalle.getCantidad()) {
+                    productosSinStock.append("- ").append(producto.getNombre())
+                                   .append(": Stock disponible: ").append(producto.getStockActual())
+                                   .append(", Solicitado: ").append(detalle.getCantidad()).append("\n");
+                    hayStock = false;
+                }
+                p = p.getSgte();
+            }
+            
+            if (!hayStock) {
+                JOptionPane.showMessageDialog(this,
+                    "Stock insuficiente para los siguientes productos:\n\n" + 
+                    productosSinStock.toString(),
+                    "Error de Stock",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        
+            // Registrar venta en base de datos
             int idVenta = DALVentas.registrarVenta(ventaActual);
-
+        
             if (idVenta > 0) {
-                // Mostrar resumen de la venta
+                // Actualizar stock en el árbol AVL
+                p = ventaActual.getDetalles().getPrimero();
+                while (p != null) {
+                    DetalleVenta detalle = p.getInfo();
+                    Producto producto = ControladorProductos.buscarPorCodigo(detalle.getProducto().getCodigo());
+                    if (producto != null) {
+                        producto.setStockActual(producto.getStockActual() - detalle.getCantidad());
+                        ControladorProductos.actualizarProductoEnArbol(producto);
+                    }
+                    p = p.getSgte();
+                }
+        
                 StringBuilder resumen = new StringBuilder();
                 resumen.append("╔══════════════════════════════════════╗\n");
                 resumen.append("║        VENTA REGISTRADA EXITOSAMENTE ║\n");
                 resumen.append("╚══════════════════════════════════════╝\n\n");
                 resumen.append("N° Venta: ").append(idVenta).append("\n");
                 resumen.append("Fecha: ").append(ventaActual.getFecha()).append("\n");
-                resumen.append("Cliente: ").append(clienteSeleccionado.getNombre()).append("\n");
-                resumen.append("DNI: ").append(clienteSeleccionado.getDni()).append("\n");
+                resumen.append("Cliente: ").append(ventaActual.getNombreCliente()).append("\n");
+                
+                if (clienteSeleccionado.getDni() != null) {
+                    resumen.append("DNI: ").append(clienteSeleccionado.getDni()).append("\n");
+                }
+                
                 resumen.append("──────────────────────────────────────\n");
                 resumen.append("DETALLE DE PRODUCTOS:\n");
-
-                NodoEnDoble<DetalleVenta> p = ventaActual.getDetalles().getPrimero();
+        
+                p = ventaActual.getDetalles().getPrimero();
                 int i = 1;
-
+        
                 while (p != null) {
                     DetalleVenta detalle = p.getInfo();
                     resumen.append(String.format(
@@ -655,45 +694,47 @@ public class FrmVentas extends javax.swing.JFrame {
                     ));
                     p = p.getSgte();
                 }
-
+        
                 resumen.append("──────────────────────────────────────\n");
                 resumen.append(String.format("Subtotal:   S/ %10.2f\n", ventaActual.getSubTotal()));
                 resumen.append(String.format("IGV (18%%):  S/ %10.2f\n", ventaActual.getIgv()));
                 resumen.append(String.format("TOTAL:      S/ %10.2f\n", ventaActual.getMontoTotal()));
                 resumen.append("══════════════════════════════════════\n");
                 resumen.append("¡Gracias por su compra!");
-
-                // Mostrar comprobante
+        
                 JOptionPane.showMessageDialog(this,
                     resumen.toString(),
                     "Comprobante de Venta #" + idVenta,
                     JOptionPane.INFORMATION_MESSAGE);
-
-                // Registrar en historial de navegación
+        
                 gestor.getHistorialNavegacion().navegarA("NuevaVentaRegistrada");
-
-                // Registrar en logger
+        
                 logger.info("Venta registrada exitosamente - ID: " + idVenta
-                    + " - Cliente ID: " + clienteSeleccionado.getIdCliente()
+                    + " - Cliente ID: " + ventaActual.getIdCliente()
                     + " - Total: S/" + ventaActual.getMontoTotal()
                     + " - Productos: " + ventaActual.getDetalles().contar());
-
-                // Reiniciar formulario para nueva venta
+        
                 reiniciarVenta();
-
+        
             } else {
                 JOptionPane.showMessageDialog(this,
                     "Error al registrar la venta en la base de datos.\n"
+                    + "Posibles causas:\n"
+                    + "1. Error de conexión con la base de datos\n"
+                    + "2. Problemas con el stock de productos\n"
+                    + "3. Error en los datos del cliente\n\n"
                     + "Por favor, intente nuevamente.",
                     "Error en Registro",
                     JOptionPane.ERROR_MESSAGE);
             }
-
+        
         } catch (Exception ex) {
             logger.severe("Error crítico al registrar venta: " + ex.getMessage());
+            ex.printStackTrace(); // Para depuración
             JOptionPane.showMessageDialog(this,
                 "Error crítico: " + ex.getMessage() + "\n"
-                + "La venta no se ha registrado. Contacte al administrador.",
+                + "La venta no se ha registrado. Contacte al administrador.\n\n"
+                + "Detalles técnicos: " + ex.getClass().getName(),
                 "Error del Sistema",
                 JOptionPane.ERROR_MESSAGE);
         }

@@ -20,51 +20,52 @@ public class DALVentas {
 
 
     public static int registrarVenta(Venta venta) {
-
+        // USAR la estructura ORIGINAL de la tabla (sin subtotal e igv)
         String sqlEncabezado = 
             "INSERT INTO Ventas_Encabezado (fecha_hora, monto_total, id_usuarios, id_clientes) " +
             "VALUES (?, ?, ?, ?)";
-
+    
         Connection cn = null;
         PreparedStatement psEncabezado = null;
         ResultSet rs = null;
-
+    
         try {
             cn = Conexion.realizarConexion();
             cn.setAutoCommit(false);
-
+    
             psEncabezado = cn.prepareStatement(
                 sqlEncabezado,
                 Statement.RETURN_GENERATED_KEYS
             );
-
+    
             Timestamp fechaTimestamp = Timestamp.valueOf(venta.getFecha());
-
+    
+            // Usar solo los campos que existen en la tabla
             psEncabezado.setTimestamp(1, fechaTimestamp);
             psEncabezado.setDouble(2, venta.getMontoTotal());
             psEncabezado.setInt(3, venta.getIdUsuario());
             psEncabezado.setInt(4, venta.getIdCliente());
-
+    
             int filas = psEncabezado.executeUpdate();
-
+    
             if (filas > 0) {
                 rs = psEncabezado.getGeneratedKeys();
-
+    
                 if (rs.next()) {
                     int idVenta = rs.getInt(1);
-
+    
                     if (registrarDetallesVenta(cn, idVenta, venta.getDetalles())
                         && actualizarStockProductos(cn, venta.getDetalles())) {
-
+    
                         cn.commit();
                         return idVenta;
                     }
                 }
             }
-
+    
             cn.rollback();
             return 0;
-
+    
         } catch (Exception ex) {
             try {
                 if (cn != null) cn.rollback();
@@ -73,7 +74,7 @@ public class DALVentas {
             }
             ex.printStackTrace();
             return 0;
-
+    
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -121,7 +122,6 @@ public class DALVentas {
         }
     }
 
-
     private static boolean actualizarStockProductos(
             Connection cn,
             ListaEnlazadaDoble<DetalleVenta> detalles
@@ -155,7 +155,7 @@ public class DALVentas {
         }
     }
 
-
+    // CORRECCIÓN: Actualizar método para incluir subtotal e igv en la consulta
     public static ArrayList<Venta> obtenerVentasPorFecha(
             String fechaInicio,
             String fechaFin
@@ -187,6 +187,15 @@ public class DALVentas {
                         rs.getInt("id_clientes")
                     );
 
+                    // CORRECCIÓN: Cargar subtotal e igv si existen
+                    try {
+                        venta.setSubTotal(rs.getDouble("subtotal"));
+                        venta.setIgv(rs.getDouble("igv"));
+                    } catch (SQLException e) {
+                        // Si las columnas no existen, calcularlos
+                        venta.calcularMontoTotal();
+                    }
+
                     venta.setNombreCliente(rs.getString("nombre_cliente"));
                     venta.setNombreUsuario(rs.getString("nombre_completo"));
 
@@ -199,6 +208,60 @@ public class DALVentas {
         }
 
         return lista;
+    }
+
+    // CORRECCIÓN: Actualizar método obtenerVentaPorId
+    public static Venta obtenerVentaPorId(int idVenta) {
+
+        String sql =
+            "SELECT v.*, c.nombre_cliente, u.nombre_completo " +
+            "FROM Ventas_Encabezado v " +
+            "INNER JOIN Clientes c ON v.id_clientes = c.id_clientes " +
+            "INNER JOIN Usuarios u ON v.id_usuarios = u.id_usuarios " +
+            "WHERE v.id_venta = ?";
+
+        try (Connection cn = Conexion.realizarConexion();
+             PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setInt(1, idVenta);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+
+                    Venta venta = new Venta(
+                        rs.getInt("id_venta"),
+                        rs.getString("fecha_hora"),
+                        rs.getDouble("monto_total"),
+                        rs.getInt("id_usuarios"),
+                        rs.getInt("id_clientes")
+                    );
+
+                    // CORRECCIÓN: Cargar subtotal e igv
+                    try {
+                        venta.setSubTotal(rs.getDouble("subtotal"));
+                        venta.setIgv(rs.getDouble("igv"));
+                    } catch (SQLException e) {
+                        venta.calcularMontoTotal();
+                    }
+
+                    venta.setNombreCliente(rs.getString("nombre_cliente"));
+                    venta.setNombreUsuario(rs.getString("nombre_completo"));
+
+                    ListaEnlazadaDoble<DetalleVenta> lista = new ListaEnlazadaDoble<>();
+                    for (DetalleVenta d : obtenerDetallesVenta(idVenta)) {
+                         lista.insertaAlFinal(d);
+                    }
+
+                    venta.setDetalles(lista);
+                    return venta;
+                }
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
     }
 
     public static ArrayList<DetalleVenta> obtenerDetallesVenta(int idVenta) {
@@ -243,52 +306,6 @@ public class DALVentas {
         }
 
         return detalles;
-    }
-
-
-    public static Venta obtenerVentaPorId(int idVenta) {
-
-        String sql =
-            "SELECT v.*, c.nombre_cliente, u.nombre_completo " +
-            "FROM Ventas_Encabezado v " +
-            "INNER JOIN Clientes c ON v.id_clientes = c.id_clientes " +
-            "INNER JOIN Usuarios u ON v.id_usuarios = u.id_usuarios " +
-            "WHERE v.id_venta = ?";
-
-        try (Connection cn = Conexion.realizarConexion();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
-
-            ps.setInt(1, idVenta);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-
-                    Venta venta = new Venta(
-                        rs.getInt("id_venta"),
-                        rs.getString("fecha_hora"),
-                        rs.getDouble("monto_total"),
-                        rs.getInt("id_usuarios"),
-                        rs.getInt("id_clientes")
-                    );
-
-                    venta.setNombreCliente(rs.getString("nombre_cliente"));
-                    venta.setNombreUsuario(rs.getString("nombre_completo"));
-
-                    ListaEnlazadaDoble<DetalleVenta> lista = new ListaEnlazadaDoble<>();
-                    for (DetalleVenta d : obtenerDetallesVenta(idVenta)) {
-                         lista.insertaAlFinal(d);
-                    }
-
-                    venta.setDetalles(lista);
-                    return venta;
-                }
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return null;
     }
 
 

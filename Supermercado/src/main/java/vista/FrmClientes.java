@@ -18,7 +18,6 @@ import utiles.GestorSistema;
  * @author Toledo
  */
 public class FrmClientes extends javax.swing.JFrame {
-    
     private FrmPrincipal principal;
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmClientes.class.getName());
@@ -36,7 +35,7 @@ public class FrmClientes extends javax.swing.JFrame {
             DefaultTableModel modelo = new DefaultTableModel() {
                 @Override
                 public boolean isCellEditable(int row, int column) {
-                    return false; // Hacer la tabla no editable
+                    return false;
                 }
             };
             
@@ -60,11 +59,11 @@ public class FrmClientes extends javax.swing.JFrame {
             tblClientes.setModel(modelo);
             
             if (tblClientes.getColumnModel().getColumnCount() > 0) {
-                tblClientes.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
-                tblClientes.getColumnModel().getColumn(1).setPreferredWidth(150); // Nombre
-                tblClientes.getColumnModel().getColumn(2).setPreferredWidth(80);  // DNI
-                tblClientes.getColumnModel().getColumn(3).setPreferredWidth(100); // Teléfono
-                tblClientes.getColumnModel().getColumn(4).setPreferredWidth(200); // Dirección
+                tblClientes.getColumnModel().getColumn(0).setPreferredWidth(50);
+                tblClientes.getColumnModel().getColumn(1).setPreferredWidth(150);
+                tblClientes.getColumnModel().getColumn(2).setPreferredWidth(80);
+                tblClientes.getColumnModel().getColumn(3).setPreferredWidth(100);
+                tblClientes.getColumnModel().getColumn(4).setPreferredWidth(200);
             }
             
             logger.info("Tabla de clientes cargada con " + lista.size() + " registros");
@@ -88,15 +87,18 @@ public class FrmClientes extends javax.swing.JFrame {
         tblClientes.clearSelection();
         this.activar(false);
     }
-    public void setPrincipal(FrmPrincipal principal){
+    
+    public void setPrincipal(FrmPrincipal principal) {
         this.principal = principal;
     }
     
-    public void activar(boolean estado){
+    public void activar(boolean estado) {
         btnModificar.setEnabled(estado);
         btnEliminar.setEnabled(estado);
-       btnGuardar.setEnabled(!estado);
+        btnGuardar.setEnabled(!estado);
     }
+    
+    // CORRECCIÓN: Validación mejorada de DNI
     private boolean validarCampos() {
         nombre = txtNombre.getText().trim();
         dni = txtDni.getText().trim();
@@ -115,8 +117,12 @@ public class FrmClientes extends javax.swing.JFrame {
             return false;
         }
         
-        if (!dni.matches("\\d{8}")) {
-            JOptionPane.showMessageDialog(this, "El DNI debe tener 8 dígitos y no debe tener ninguna letra", "AVISO", JOptionPane.WARNING_MESSAGE);
+        // CORRECCIÓN: Validación más flexible para DNI/RUC
+        if (!dni.matches("\\d{8,11}")) {
+            JOptionPane.showMessageDialog(this, 
+                "El DNI/RUC debe tener entre 8 y 11 dígitos numéricos", 
+                "AVISO", 
+                JOptionPane.WARNING_MESSAGE);
             txtDni.requestFocus();
             return false;
         }

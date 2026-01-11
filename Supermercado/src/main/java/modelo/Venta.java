@@ -26,11 +26,11 @@ public class Venta {
     private double igv;
     private ListaEnlazadaDoble<DetalleVenta> detalles;
     
-  public Venta() {
-    this.detalles = new ListaEnlazadaDoble<>();
-    this.fecha = LocalDateTime.now()
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-}
+    public Venta() {
+        this.detalles = new ListaEnlazadaDoble<>();
+        this.fecha = LocalDateTime.now()
+            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
     
     public Venta(int idVenta, String fecha, double montoTotal, int idUsuario, int idCliente) {
         this();
@@ -41,70 +41,68 @@ public class Venta {
         this.idCliente = idCliente;
     }
     
-    // Método para agregar detalle
-public void agregarDetalle(DetalleVenta detalle) {
-    detalles.insertaAlFinal(detalle);
-    calcularMontoTotal();
-}
+    public void agregarDetalle(DetalleVenta detalle) {
+        detalles.insertaAlFinal(detalle);
+        calcularMontoTotal(); // CORRECCIÓN: Usar calcularMontoTotal() que hace todos los cálculos
+    }
     
-    // Método para eliminar detalle
-  public void eliminarDetalle(int index) {
-    if (index < 0) return;
+    public void eliminarDetalle(int index) {
+        if (index < 0) return;
 
-    int i = 0;
-    NodoEnDoble<DetalleVenta> p = detalles.getPrimero();
+        int i = 0;
+        NodoEnDoble<DetalleVenta> p = detalles.getPrimero();
 
-    while (p != null) {
-        if (i == index) {
-            detalles.eliminar(p.getInfo());
-            calcularSubtotal();
-            return;
+        while (p != null) {
+            if (i == index) {
+                detalles.eliminar(p.getInfo());
+                calcularMontoTotal(); // CORRECCIÓN: Usar calcularMontoTotal()
+                return;
+            }
+            i++;
+            p = p.getSgte();
         }
-        i++;
-        p = p.getSgte();
     }
-}
     
-    // Método para calcular el monto total
-  public void calcularSubtotal() {
-    subTotal = 0;
-    NodoEnDoble<DetalleVenta> p = detalles.getPrimero();
+    public void calcularSubtotal() {
+        subTotal = 0;
+        NodoEnDoble<DetalleVenta> p = detalles.getPrimero();
 
-    while (p != null) {
-        subTotal += p.getInfo().getSubTotal();
-        p = p.getSgte();
+        while (p != null) {
+            subTotal += p.getInfo().getSubTotal();
+            p = p.getSgte();
+        }
     }
-}
-  public void calcularIgv()
-  {
-  igv = subTotal * 0.18;
-  }
+    
+    public void calcularIgv() {
+        igv = subTotal * 0.18;
+    }
+    
     public void calcularMontoTotal() {
-    montoTotal = 0;
-    montoTotal= subTotal+igv;
-  
-}
-    // Método para verificar si hay stock disponible
-public boolean verificarStockDisponible() {
-    NodoEnDoble<DetalleVenta> p = detalles.getPrimero();
-
-    while (p != null) {
-        DetalleVenta d = p.getInfo();
-        if (d.getProducto().getStockActual() < d.getCantidad()) {
-            return false;
-        }
-        p = p.getSgte();
+        calcularSubtotal();   // 1. Calcular subtotal
+        calcularIgv();        // 2. Calcular IGV basado en subtotal
+        this.montoTotal = this.subTotal + this.igv; // 3. Calcular total
     }
-    return true;
-}
+    
+    public boolean verificarStockDisponible() {
+        NodoEnDoble<DetalleVenta> p = detalles.getPrimero();
 
+        while (p != null) {
+            DetalleVenta d = p.getInfo();
+            if (d.getProducto().getStockActual() < d.getCantidad()) {
+                return false;
+            }
+            p = p.getSgte();
+        }
+        return true;
+    }
     
     // Getters y Setters
     public int getIdVenta() { return idVenta; }
     public void setIdVenta(int idVenta) { this.idVenta = idVenta; }
-        public double getIgv() { return igv; }
-    public void setIgv(double igv) 
-        { this.igv = igv; }
+    
+    public double getIgv() { return igv; }
+    public void setIgv(double igv) { this.igv = igv; }
+    
     public String getFecha() { return fecha; }
     public void setFecha(String fecha) { this.fecha = fecha; }
     
@@ -123,8 +121,7 @@ public boolean verificarStockDisponible() {
     public String getNombreUsuario() { return nombreUsuario; }
     public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
     
-    public ListaEnlazadaDoble<DetalleVenta> getDetalles() 
-    { return detalles; }
+    public ListaEnlazadaDoble<DetalleVenta> getDetalles() { return detalles; }
     
     public void setDetalles(ListaEnlazadaDoble<DetalleVenta> detalles) { 
         this.detalles = detalles; 

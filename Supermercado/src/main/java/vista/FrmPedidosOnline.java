@@ -5,11 +5,16 @@
 package vista;
 
 import datos.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import logica.ControladorProductos;
 import modelo.*;
 import utiles.GestorSistema;
+import utiles.ListaEnlazadaDoble;
+import utiles.NodoEnDoble;
 
 /**
  *
@@ -33,6 +38,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         inicializarTablaCola();
         actualizarEstadoCola();
         configurarMetodosPago();
+        actualizarTablaCola(); // Cargar pedidos existentes
     }
     
     private void configurarMetodosPago() {
@@ -48,15 +54,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         modeloDetalles = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Tabla no editable
-            }
-            
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 2) return Integer.class;     // Cantidad
-                if (columnIndex == 3 || columnIndex == 5) return Double.class; // Precio y Subtotal
-                if (columnIndex == 4) return Integer.class;     // Stock
-                return String.class;
+                return false;
             }
         };
         
@@ -69,7 +67,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         
         tblDetalles.setModel(modeloDetalles);
         
-        // Ajustar ancho de columnas
+        // Ajustar anchos de columnas
         if (tblDetalles.getColumnModel().getColumnCount() > 0) {
             tblDetalles.getColumnModel().getColumn(0).setPreferredWidth(80);
             tblDetalles.getColumnModel().getColumn(1).setPreferredWidth(200);
@@ -84,7 +82,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         modeloCola = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Tabla no editable
+                return false;
             }
         };
         
@@ -97,7 +95,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         
         tblColaPedidos.setModel(modeloCola);
         
-        // Ajustar ancho de columnas
+        // Ajustar anchos de columnas
         if (tblColaPedidos.getColumnModel().getColumnCount() > 0) {
             tblColaPedidos.getColumnModel().getColumn(0).setPreferredWidth(40);
             tblColaPedidos.getColumnModel().getColumn(1).setPreferredWidth(80);
@@ -113,11 +111,24 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
             listaClientes = DALCliente.obtenerClientes();
             cmbCliente.removeAllItems();
             
+            // 1. AGREGAR PLACEHOLDER
+            cmbCliente.addItem("-- Seleccione Cliente --");
+            
+            // 2. Lista auxiliar sin CLIENTE GENERAL
+            ArrayList<Cliente> clientesFiltrados = new ArrayList<>();
+            
             for (Cliente cliente : listaClientes) {
-                cmbCliente.addItem(cliente.getNombre() + " - DNI: " + cliente.getDni());
+                if (cliente.getIdCliente() != 1) { // Excluir CLIENTE GENERAL
+                    clientesFiltrados.add(cliente);
+                    cmbCliente.addItem(cliente.getNombre() + " - DNI: " + cliente.getDni());
+                }
             }
             
+            // 3. Reemplazar listaClientes con la filtrada
+            listaClientes = clientesFiltrados;
+            
             logger.info("Clientes cargados para pedidos online: " + listaClientes.size());
+            
         } catch (Exception ex) {
             logger.severe("Error al cargar clientes: " + ex.getMessage());
             JOptionPane.showMessageDialog(this, 
@@ -141,7 +152,6 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         try {
             Producto producto = DALProductos.buscarPorCodigo(codigo);
             if (producto != null) {
-                // Verificar stock
                 if (producto.getStockActual() <= 0) {
                     JOptionPane.showMessageDialog(this, 
                         "Producto sin stock disponible", 
@@ -152,7 +162,6 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
                     return;
                 }
                 
-                // Verificar stock mínimo
                 if (producto.getStockActual() <= producto.getStockMinimo()) {
                     JOptionPane.showMessageDialog(this, 
                         "ALERTA: Stock bajo (" + producto.getStockActual() + " unidades)\n" +
@@ -161,10 +170,8 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
                         JOptionPane.WARNING_MESSAGE);
                 }
                 
-                // Verificar si ya está en el pedido
                 int indiceExistente = buscarProductoEnPedido(producto.getIdProducto());
                 if (indiceExistente >= 0) {
-                    // Aumentar cantidad del producto existente
                     DetallePedido detalle = pedidoActual.getDetalles().get(indiceExistente);
                     int nuevaCantidad = detalle.getCantidad() + 1;
                     
@@ -180,7 +187,6 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
                     detalle.setCantidad(nuevaCantidad);
                     actualizarFilaTablaDetalles(indiceExistente, detalle, producto);
                 } else {
-                    // Agregar nuevo producto
                     DetallePedido nuevoDetalle = new DetallePedido(producto, 1);
                     pedidoActual.agregarProducto(producto, 1);
                     agregarFilaTablaDetalles(nuevoDetalle, producto);
@@ -235,37 +241,37 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
     
     private void actualizarTotalesPedido() {
         double subtotal = pedidoActual.calcularTotal();
-        double igv = subtotal * 0.18; // IGV 18%
+        double igv = subtotal * 0.18;
         double total = subtotal + igv;
         
         txtSubtotal.setText(String.format("S/ %.2f", subtotal));
         txtIGV.setText(String.format("S/ %.2f", igv));
         txtTotal.setText(String.format("S/ %.2f", total));
         
-        // Actualizar contador de productos
         int totalProductos = pedidoActual.getDetalles().stream()
                 .mapToInt(DetallePedido::getCantidad)
                 .sum();
         lblProductosPedido.setText("Productos en pedido: " + totalProductos + " items");
     }
     
-    
     private void actualizarTablaCola() {
         modeloCola.setRowCount(0);
-        modelo.Pedido proximo = gestor.getColaPedidos().verProximoPedido();
-        if (proximo != null) {
+        
+        ArrayList<Pedido> pedidosEnCola = gestor.getColaPedidos().obtenerPedidosEnCola();
+        int posicion = 1;
+        
+        for (Pedido pedido : pedidosEnCola) {
             Object[] fila = {
-                1,
-                "PED-" + String.format("%03d", proximo.getIdPedido()),
-                proximo.getCliente().getNombre(),
-                String.format("S/ %.2f", proximo.calcularTotal()),
-                proximo.getEstado(),
-                proximo.getDetalles().size() + " items"
+                posicion++,
+                "PED-" + String.format("%03d", pedido.getIdPedido()),
+                pedido.getCliente() != null ? pedido.getCliente().getNombre() : "N/A",
+                String.format("S/ %.2f", pedido.calcularTotal()),
+                pedido.getEstado(),
+                pedido.getDetalles().size() + " items"
             };
             modeloCola.addRow(fila);
         }
         
-        // Actualizar información de estado
         actualizarEstadoCola();
     }
     
@@ -293,42 +299,106 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
             return;
         }
         
-        // Obtener próximo pedido
-        modelo.Pedido pedidoProcesar = gestor.getColaPedidos().procesarSiguientePedido();
+        Pedido pedidoProcesar = gestor.getColaPedidos().procesarSiguientePedido();
         
         if (pedidoProcesar != null) {
-            // Mostrar detalles del pedido a procesar
             int opcion = JOptionPane.showConfirmDialog(this,
                 "📦 PROCESAR PEDIDO #" + pedidoProcesar.getIdPedido() + "\n\n" +
                 "Cliente: " + pedidoProcesar.getCliente().getNombre() + "\n" +
                 "Total: " + String.format("S/ %.2f", pedidoProcesar.calcularTotal()) + "\n" +
                 "Productos: " + pedidoProcesar.getDetalles().size() + " items\n\n" +
-                "¿Desea marcar este pedido como EN PROCESO?",
+                "¿Desea convertir este pedido en una venta?",
                 "Procesar Pedido",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
             
             if (opcion == JOptionPane.YES_OPTION) {
-                // Aquí iría la lógica para convertir el pedido en una venta real
-                // y actualizar el stock en la base de datos
-                
-                // Por ahora, solo marcamos como procesado
-                gestor.getColaPedidos().completarPedido(pedidoProcesar);
-                
-                JOptionPane.showMessageDialog(this,
-                    "✅ Pedido #" + pedidoProcesar.getIdPedido() + " marcado como EN PROCESO\n\n" +
-                    "El pedido ha sido retirado de la cola y está listo\n" +
-                    "para ser preparado y enviado.",
-                    "Pedido en Proceso",
-                    JOptionPane.INFORMATION_MESSAGE);
-                
-                // Actualizar tabla
+                try {
+                    // Convertir Pedido a Venta
+                    Venta venta = convertirPedidoAVenta(pedidoProcesar);
+                    
+                    // Registrar venta en BD
+                    int idVenta = DALVentas.registrarVenta(venta);
+                    
+                    if (idVenta > 0) {
+                        // Marcar pedido como completado
+                        gestor.getColaPedidos().completarPedido(pedidoProcesar);
+                        
+                        JOptionPane.showMessageDialog(this,
+                            "✅ PEDIDO PROCESADO EXITOSAMENTE\n\n" +
+                            "Pedido #" + pedidoProcesar.getIdPedido() + "\n" +
+                            "Convertido a Venta #" + idVenta + "\n" +
+                            "Cliente: " + pedidoProcesar.getCliente().getNombre() + "\n" +
+                            "Total: " + String.format("S/ %.2f", venta.getMontoTotal()),
+                            "Pedido Completado",
+                            JOptionPane.INFORMATION_MESSAGE);
+                        
+                        actualizarTablaCola();
+                        actualizarEstadoCola();
+                        
+                        logger.info("Pedido procesado y convertido a venta - ID Pedido: " + 
+                                  pedidoProcesar.getIdPedido() + " - ID Venta: " + idVenta);
+                    } else {
+                        JOptionPane.showMessageDialog(this,
+                            "Error al convertir pedido a venta",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                        // Devolver pedido a la cola
+                        gestor.getColaPedidos().getColaPedidos().add(pedidoProcesar);
+                    }
+                    
+                } catch (Exception ex) {
+                    logger.severe("Error al procesar pedido: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(this,
+                        "Error al procesar pedido: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                    // Devolver pedido a la cola
+                    gestor.getColaPedidos().getColaPedidos().add(pedidoProcesar);
+                }
+            } else {
+                // Si no se confirma, devolver a la cola
+                pedidoProcesar.setEstado("PENDIENTE");
+                gestor.getColaPedidos().getColaPedidos().add(pedidoProcesar);
                 actualizarTablaCola();
-                actualizarEstadoCola();
-                
-                logger.info("Pedido procesado - ID: " + pedidoProcesar.getIdPedido());
             }
         }
+    }
+    
+    // MÉTODO CORREGIDO: Convertir Pedido a Venta
+    private Venta convertirPedidoAVenta(Pedido pedido) {
+        Venta venta = new Venta();
+        
+        // Configurar datos básicos
+        venta.setIdUsuario(gestor.getUsuarioActual().getIdUsuario());
+        venta.setIdCliente(pedido.getCliente().getIdCliente());
+        venta.setNombreCliente(pedido.getCliente().getNombre());
+        
+        // Usar fecha actual
+        String fechaActual = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        venta.setFecha(fechaActual);
+        
+        // Crear lista de detalles de venta
+        ListaEnlazadaDoble<DetalleVenta> detallesVenta = new ListaEnlazadaDoble<>();
+        
+        for (DetallePedido detallePedido : pedido.getDetalles()) {
+            // Crear detalle de venta
+            DetalleVenta detalleVenta = new DetalleVenta(
+                detallePedido.getProducto(),
+                detallePedido.getCantidad()
+            );
+            
+            // Asegurar que el subtotal esté calculado
+            detalleVenta.calcularSubTotal();
+            
+            detallesVenta.insertaAlFinal(detalleVenta);
+        }
+        
+        // Asignar detalles y calcular totales
+        venta.setDetalles(detallesVenta);
+        venta.calcularMontoTotal(); // Calcula subtotal, IGV y total
+        
+        return venta;
     }
     
     private void verDetallesPedido() {
@@ -340,16 +410,56 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
             return;
         }
         
-        modelo.Pedido proximo = gestor.getColaPedidos().verProximoPedido();
+        Pedido proximo = gestor.getColaPedidos().verProximoPedido();
         if (proximo != null) {
             JOptionPane.showMessageDialog(this,
-                proximo.obtenerDetallesFormateados(),
+                generarDetallesFormateados(proximo),
                 "Detalles del Próximo Pedido #" + proximo.getIdPedido(),
                 JOptionPane.INFORMATION_MESSAGE);
         }
     }
     
-    private void cancelarPedido() {
+    // Método auxiliar para formatear detalles
+    private String generarDetallesFormateados(Pedido pedido) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("══════════════════════════════════════\n");
+        sb.append("           DETALLE DEL PEDIDO         \n");
+        sb.append("══════════════════════════════════════\n");
+        sb.append("Pedido #: ").append(pedido.getIdPedido()).append("\n");
+        sb.append("Fecha: ").append(pedido.getFechaHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
+        sb.append("Estado: ").append(pedido.getEstado()).append("\n");
+        sb.append("Cliente: ").append(pedido.getCliente().getNombre()).append("\n");
+        sb.append("DNI: ").append(pedido.getCliente().getDni()).append("\n");
+        sb.append("Teléfono: ").append(pedido.getTelefonoContacto()).append("\n");
+        sb.append("Dirección: ").append(pedido.getDireccionEntrega()).append("\n");
+        sb.append("Método Pago: ").append(pedido.getMetodoPago()).append("\n");
+        sb.append("Notas: ").append(pedido.getNotas() != null ? pedido.getNotas() : "Ninguna").append("\n");
+        sb.append("──────────────────────────────────────\n");
+        sb.append("               PRODUCTOS              \n");
+        sb.append("──────────────────────────────────────\n");
+        
+        int i = 1;
+        for (DetallePedido detalle : pedido.getDetalles()) {
+            sb.append(String.format("%2d. %-20s x%3d = S/ %7.2f\n", 
+                i++,
+                detalle.getProducto().getNombre(),
+                detalle.getCantidad(),
+                detalle.getSubtotal()));
+        }
+        
+        sb.append("──────────────────────────────────────\n");
+        double total = pedido.calcularTotal();
+        double igv = total * 0.18;
+        double totalConIGV = total + igv;
+        sb.append(String.format("Subtotal:         S/ %10.2f\n", total));
+        sb.append(String.format("IGV (18%%):        S/ %10.2f\n", igv));
+        sb.append(String.format("TOTAL A PAGAR:    S/ %10.2f\n", totalConIGV));
+        sb.append("══════════════════════════════════════\n");
+        
+        return sb.toString();
+    }
+    
+    private void cancelarPedidoCola() {
         if (gestor.getColaPedidos().estaVacia()) {
             JOptionPane.showMessageDialog(this,
                 "No hay pedidos en la cola para cancelar",
@@ -358,7 +468,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
             return;
         }
         
-        modelo.Pedido proximo = gestor.getColaPedidos().verProximoPedido();
+        Pedido proximo = gestor.getColaPedidos().verProximoPedido();
         if (proximo != null) {
             int confirm = JOptionPane.showConfirmDialog(this,
                 "¿Cancelar el pedido #" + proximo.getIdPedido() + "?\n\n" +
@@ -377,7 +487,6 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
                     "Pedido Cancelado",
                     JOptionPane.INFORMATION_MESSAGE);
                 
-                // Actualizar tabla
                 actualizarTablaCola();
                 actualizarEstadoCola();
                 
@@ -387,19 +496,14 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
     }
     
     private void reiniciarPedido() {
-        // Guardar cliente seleccionado si existe
-        int clienteIndex = cmbCliente.getSelectedIndex();
-        
-        // Reiniciar pedido
         pedidoActual = new Pedido();
         modeloDetalles.setRowCount(0);
         
-        // Restaurar cliente si había uno seleccionado
-        if (clienteIndex > 0) {
-            cmbCliente.setSelectedIndex(clienteIndex);
+        // Restaurar valores por defecto
+        if (cmbCliente.getItemCount() > 0) {
+            cmbCliente.setSelectedIndex(0);
         }
         
-        // Limpiar otros campos
         txtDireccion.setText("");
         txtTelefono.setText("");
         txtNotas.setText("");
@@ -407,6 +511,10 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         
         actualizarTotalesPedido();
         txtCodigo.requestFocus();
+    }
+    
+    public void setPrincipal(FrmPrincipal principal) {
+        this.principal = principal;
     }
     
 
@@ -725,7 +833,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
             return;
         }
         
-        // Validar dirección de entrega
+        // Validar dirección
         if (txtDireccion.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this,
                 "Ingrese la dirección de entrega",
@@ -735,7 +843,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
             return;
         }
         
-        // Validar teléfono de contacto
+        // Validar teléfono
         if (txtTelefono.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this,
                 "Ingrese el teléfono de contacto",
@@ -745,7 +853,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
             return;
         }
         
-        // Validar que haya productos
+        // Validar productos
         if (pedidoActual.getDetalles().isEmpty()) {
             JOptionPane.showMessageDialog(this,
                 "Agregue productos al pedido",
@@ -766,18 +874,31 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
         }
         
         try {
-            // Configurar datos del pedido
-            int indiceCliente = cmbCliente.getSelectedIndex() - 1;
-            Cliente cliente = listaClientes.get(indiceCliente);
+            // Obtener cliente seleccionado
+            int indiceCombo = cmbCliente.getSelectedIndex(); // 0 = placeholder, 1 = primer cliente real
+            int indiceLista = indiceCombo - 1; // Convertir a índice de lista
+            
+            if (indiceLista < 0 || indiceLista >= listaClientes.size()) {
+                JOptionPane.showMessageDialog(this,
+                    "Error: Índice de cliente inválido",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            Cliente cliente = listaClientes.get(indiceLista);
+            
+            // Configurar pedido
             pedidoActual.setCliente(cliente);
             pedidoActual.setDireccionEntrega(txtDireccion.getText().trim());
             pedidoActual.setTelefonoContacto(txtTelefono.getText().trim());
             pedidoActual.setMetodoPago(cmbMetodoPago.getSelectedItem().toString());
             pedidoActual.setNotas(txtNotas.getText().trim());
             
-            // Agregar pedido a la cola (COLA FIFO)
+            // Guardar pedido en BD (necesitarías implementar DALPedidos)
+            // Por ahora solo lo agregamos a la cola en memoria
+            
             if (gestor.getColaPedidos().agregarPedido(pedidoActual)) {
-                // Mostrar confirmación
                 String mensaje = "✅ PEDIDO REGISTRADO EN COLA EXITOSAMENTE\n\n" +
                                "Número de Pedido: #" + pedidoActual.getIdPedido() + "\n" +
                                "Cliente: " + cliente.getNombre() + "\n" +
@@ -792,17 +913,14 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
                     "Pedido Agregado a la Cola",
                     JOptionPane.INFORMATION_MESSAGE);
                 
-                // Registrar en logger
                 logger.info("Pedido online agregado a cola - ID: " + pedidoActual.getIdPedido() + 
                            " - Cliente: " + cliente.getNombre() + 
                            " - Total: " + pedidoActual.calcularTotal() + 
                            " - Posición: " + gestor.getColaPedidos().cantidadPedidosPendientes());
                 
-                // Actualizar tabla de cola
+                // Actualizar interfaz
                 actualizarTablaCola();
                 actualizarEstadoCola();
-                
-                // Reiniciar formulario para nuevo pedido
                 reiniciarPedido();
                 
             } else {
@@ -814,6 +932,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
             
         } catch (Exception ex) {
             logger.severe("Error al registrar pedido online: " + ex.getMessage());
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(this,
                 "Error crítico: " + ex.getMessage() + "\n" +
                 "El pedido no se ha registrado. Contacte al administrador.",
@@ -823,7 +942,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnCancelarColaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarColaActionPerformed
-        cancelarPedido();
+        cancelarPedidoCola();
     }//GEN-LAST:event_btnCancelarColaActionPerformed
 
     private void btnAgregarProductoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarProductoActionPerformed
@@ -833,9 +952,7 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
     private void tblDetallesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblDetallesMouseClicked
         
     }//GEN-LAST:event_tblDetallesMouseClicked
-    public void setPrincipal(FrmPrincipal principal){
-        this.principal = principal;
-    }
+    
     private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
        // 1. Validación de seguridad (Mantenemos tu lógica original)
         if (!pedidoActual.getDetalles().isEmpty()) {
@@ -921,7 +1038,28 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
     }//GEN-LAST:event_btnVerDetallesActionPerformed
 
     private void btnCancelarPedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarPedidoActionPerformed
-        cancelarPedido();
+        if (!pedidoActual.getDetalles().isEmpty()) {
+            int confirm = JOptionPane.showConfirmDialog(this,
+                "¿Cancelar pedido actual?\n\n" +
+                "Se perderán todos los productos agregados (" + 
+                pedidoActual.getDetalles().size() + " productos).",
+                "Confirmar Cancelación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+            
+            if (confirm == JOptionPane.YES_OPTION) {
+                reiniciarPedido();
+                JOptionPane.showMessageDialog(this,
+                    "Pedido actual cancelado",
+                    "Cancelación Exitosa",
+                    JOptionPane.INFORMATION_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this,
+                "No hay productos en el pedido para cancelar",
+                "Pedido Vacío",
+                JOptionPane.INFORMATION_MESSAGE);
+        }
     }//GEN-LAST:event_btnCancelarPedidoActionPerformed
 
 

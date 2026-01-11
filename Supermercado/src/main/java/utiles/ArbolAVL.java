@@ -92,7 +92,6 @@ public class ArbolAVL<T extends Comparable<T>> {
         return nodo;
     }
 
-
     public T buscar(T datoBusqueda) {
         NodoAVL<T> res = buscarRec(raiz, datoBusqueda);
         return (res != null) ? res.getDato() : null;
@@ -103,14 +102,104 @@ public class ArbolAVL<T extends Comparable<T>> {
         
         int comparacion = datoBusqueda.compareTo(nodo.getDato());
 
-        if (comparacion == 0) return nodo; 
+        if (comparacion == 0) return nodo;
         
         if (comparacion < 0) return buscarRec(nodo.getIzquierda(), datoBusqueda);
         
         return buscarRec(nodo.getDerecha(), datoBusqueda);
     }
     
+    // NUEVO: Método eliminar
+    public boolean eliminar(T dato) {
+        if (buscar(dato) == null) {
+            return false;
+        }
+        raiz = eliminarRec(raiz, dato);
+        return true;
+    }
+
+    private NodoAVL<T> eliminarRec(NodoAVL<T> raiz, T dato) {
+        if (raiz == null) return raiz;
+
+        int comparacion = dato.compareTo(raiz.getDato());
+
+        if (comparacion < 0) {
+            raiz.setIzquierda(eliminarRec(raiz.getIzquierda(), dato));
+        } else if (comparacion > 0) {
+            raiz.setDerecha(eliminarRec(raiz.getDerecha(), dato));
+        } else {
+            // Nodo con uno o ningún hijo
+            if ((raiz.getIzquierda() == null) || (raiz.getDerecha() == null)) {
+                NodoAVL<T> temp = (raiz.getIzquierda() != null) ? 
+                                  raiz.getIzquierda() : raiz.getDerecha();
+
+                // Sin hijo
+                if (temp == null) {
+                    temp = raiz;
+                    raiz = null;
+                } else {
+                    // Un hijo
+                    raiz = temp;
+                }
+            } else {
+                // Nodo con dos hijos
+                NodoAVL<T> temp = minValueNode(raiz.getDerecha());
+                raiz.setDato(temp.getDato());
+                raiz.setDerecha(eliminarRec(raiz.getDerecha(), temp.getDato()));
+            }
+        }
+
+        if (raiz == null) return raiz;
+
+        // Actualizar altura
+        raiz.setAltura(1 + max(altura(raiz.getIzquierda()), altura(raiz.getDerecha())));
+
+        // Balancear
+        int balance = getBalance(raiz);
+
+        // Rotaciones según balance
+        if (balance > 1 && getBalance(raiz.getIzquierda()) >= 0)
+            return rotacionDerecha(raiz);
+
+        if (balance > 1 && getBalance(raiz.getIzquierda()) < 0) {
+            raiz.setIzquierda(rotacionIzquierda(raiz.getIzquierda()));
+            return rotacionDerecha(raiz);
+        }
+
+        if (balance < -1 && getBalance(raiz.getDerecha()) <= 0)
+            return rotacionIzquierda(raiz);
+
+        if (balance < -1 && getBalance(raiz.getDerecha()) > 0) {
+            raiz.setDerecha(rotacionDerecha(raiz.getDerecha()));
+            return rotacionIzquierda(raiz);
+        }
+
+        return raiz;
+    }
+
+    private NodoAVL<T> minValueNode(NodoAVL<T> nodo) {
+        NodoAVL<T> actual = nodo;
+        while (actual.getIzquierda() != null)
+            actual = actual.getIzquierda();
+        return actual;
+    }
+    
     public void limpiar() { 
         raiz = null; 
+    }
+    
+    // NUEVO: Método para obtener tamaño
+    public int size() {
+        return sizeRec(raiz);
+    }
+    
+    private int sizeRec(NodoAVL<T> nodo) {
+        if (nodo == null) return 0;
+        return 1 + sizeRec(nodo.getIzquierda()) + sizeRec(nodo.getDerecha());
+    }
+    
+    // NUEVO: Método para verificar si está vacío
+    public boolean isEmpty() {
+        return raiz == null;
     }
 }

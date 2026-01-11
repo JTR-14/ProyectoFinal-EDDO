@@ -49,20 +49,23 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
                 JOptionPane.ERROR_MESSAGE);
         }
     }
-    public void setPrincipal(){
-        
+    
+    // CORRECCIÓN: Método setPrincipal con parámetro
+    public void setPrincipal(FrmPrincipal principal) {
+        this.principal = principal;
     }
+    
     private void inicializarTablaHistorial() {
         modeloHistorial = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Tabla no editable
+                return false;
             }
             
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 0) return Integer.class; // ID Cambio
-                if (columnIndex == 1) return Integer.class; // ID Producto
+                if (columnIndex == 0) return Integer.class;
+                if (columnIndex == 1) return Integer.class;
                 return String.class;
             }
         };
@@ -78,16 +81,15 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         
         tblHistorial.setModel(modeloHistorial);
         
-        // Ajustar ancho de columnas
         if (tblHistorial.getColumnModel().getColumnCount() > 0) {
-            tblHistorial.getColumnModel().getColumn(0).setPreferredWidth(70);   // ID Cambio
-            tblHistorial.getColumnModel().getColumn(1).setPreferredWidth(70);   // ID Producto
-            tblHistorial.getColumnModel().getColumn(2).setPreferredWidth(150);  // Producto
-            tblHistorial.getColumnModel().getColumn(3).setPreferredWidth(90);   // Precio Anterior
-            tblHistorial.getColumnModel().getColumn(4).setPreferredWidth(90);   // Precio Nuevo
-            tblHistorial.getColumnModel().getColumn(5).setPreferredWidth(120);  // Fecha
-            tblHistorial.getColumnModel().getColumn(6).setPreferredWidth(150);  // Motivo
-            tblHistorial.getColumnModel().getColumn(7).setPreferredWidth(120);  // Usuario
+            tblHistorial.getColumnModel().getColumn(0).setPreferredWidth(70);
+            tblHistorial.getColumnModel().getColumn(1).setPreferredWidth(70);
+            tblHistorial.getColumnModel().getColumn(2).setPreferredWidth(150);
+            tblHistorial.getColumnModel().getColumn(3).setPreferredWidth(90);
+            tblHistorial.getColumnModel().getColumn(4).setPreferredWidth(90);
+            tblHistorial.getColumnModel().getColumn(5).setPreferredWidth(120);
+            tblHistorial.getColumnModel().getColumn(6).setPreferredWidth(150);
+            tblHistorial.getColumnModel().getColumn(7).setPreferredWidth(120);
         }
     }
     
@@ -111,14 +113,12 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         }
         
         try {
-            // Obtener ID del producto seleccionado
             String seleccion = cmbProducto.getSelectedItem().toString();
             int startIndex = seleccion.lastIndexOf("(ID: ") + 5;
             int endIndex = seleccion.lastIndexOf(")");
             String idStr = seleccion.substring(startIndex, endIndex);
             int idProducto = Integer.parseInt(idStr);
             
-            // Buscar cambios para este producto
             List<HistorialCambiosPrecio.CambioPrecio> cambios = historial.buscarCambiosPorProducto(idProducto);
             
             modeloHistorial.setRowCount(0);
@@ -151,7 +151,6 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         }
         
         try {
-            // Buscar cambios por rango de fecha
             List<HistorialCambiosPrecio.CambioPrecio> cambios = historial.buscarCambiosPorFecha(fechaInicio, fechaFin);
             
             modeloHistorial.setRowCount(0);
@@ -179,7 +178,6 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
             try {
                 int idCambio = (Integer) tblHistorial.getValueAt(fila, 0);
                 
-                // Buscar el cambio seleccionado
                 List<HistorialCambiosPrecio.CambioPrecio> cambios = historial.obtenerTodosLosCambios();
                 HistorialCambiosPrecio.CambioPrecio cambioSeleccionado = null;
                 
@@ -191,7 +189,6 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
                 }
                 
                 if (cambioSeleccionado != null) {
-                    // Mostrar detalles en un cuadro de diálogo
                     JOptionPane.showMessageDialog(this,
                         cambioSeleccionado.toDetailedString(),
                         "Detalles del Cambio #" + idCambio,
@@ -260,7 +257,6 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
                     "Cambio Deshecho",
                     JOptionPane.INFORMATION_MESSAGE);
                 
-                // Actualizar tabla
                 cargarHistorialCompleto();
                 actualizarEstadisticas();
                 
@@ -276,16 +272,15 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         lblAumentos.setText("Aumentos: " + stats.getAumentos());
         lblDisminuciones.setText("Disminuciones: " + stats.getDisminuciones());
         
-        // Actualizar colores según estadísticas
         if (stats.getAumentos() > stats.getDisminuciones()) {
-            lblAumentos.setForeground(new java.awt.Color(0, 102, 0)); // Verde
-            lblDisminuciones.setForeground(new java.awt.Color(102, 102, 102)); // Gris
+            lblAumentos.setForeground(new java.awt.Color(0, 102, 0));
+            lblDisminuciones.setForeground(new java.awt.Color(102, 102, 102));
         } else if (stats.getDisminuciones() > stats.getAumentos()) {
-            lblAumentos.setForeground(new java.awt.Color(102, 102, 102)); // Gris
-            lblDisminuciones.setForeground(new java.awt.Color(204, 0, 0)); // Rojo
+            lblAumentos.setForeground(new java.awt.Color(102, 102, 102));
+            lblDisminuciones.setForeground(new java.awt.Color(204, 0, 0));
         } else {
-            lblAumentos.setForeground(new java.awt.Color(102, 102, 102)); // Gris
-            lblDisminuciones.setForeground(new java.awt.Color(102, 102, 102)); // Gris
+            lblAumentos.setForeground(new java.awt.Color(102, 102, 102));
+            lblDisminuciones.setForeground(new java.awt.Color(102, 102, 102));
         }
     }
     
@@ -315,7 +310,6 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
             JOptionPane.PLAIN_MESSAGE);
         
         if (opcion == JOptionPane.YES_OPTION) {
-            // Aquí se podría agregar lógica para guardar en archivo
             JOptionPane.showMessageDialog(this,
                 "El historial se ha preparado para exportar.\n" +
                 "Copia el contenido y guárdalo en un archivo de texto.",
@@ -330,9 +324,6 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         txtFechaFin.setText("");
         cargarHistorialCompleto();
     }
- public void setPrincipal(FrmPrincipal principal){
-     this.principal = principal;
- }   
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
