@@ -17,6 +17,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private FrmVentas frmVentas;
     private FrmHistorialPrecios frmHistorial;
     private FrmPedidosOnline frmPedidos;
+    private FrmDespacho frmDespacho;
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmPrincipal.class.getName());
     private Usuario usuarioLogeado;
@@ -88,7 +89,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         mnuHistoriales = new javax.swing.JMenu();
         mniHistorialPrecios = new javax.swing.JMenuItem();
         mniPedidosOnline = new javax.swing.JMenuItem();
-        mnuMovimientos = new javax.swing.JMenu();
+        mniDespacho = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -113,7 +114,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         jMenuBar1.add(mnuDatos);
 
-        mnuHistoriales.setText("HISTORIALES");
+        mnuHistoriales.setText("ADMINISTRADOR");
 
         mniHistorialPrecios.setText("HISTORIAL DE PRECIOS");
         mniHistorialPrecios.addActionListener(this::mniHistorialPreciosActionPerformed);
@@ -123,10 +124,11 @@ public class FrmPrincipal extends javax.swing.JFrame {
         mniPedidosOnline.addActionListener(this::mniPedidosOnlineActionPerformed);
         mnuHistoriales.add(mniPedidosOnline);
 
-        jMenuBar1.add(mnuHistoriales);
+        mniDespacho.setText("CARGA DE CAMIONES");
+        mniDespacho.addActionListener(this::mniDespachoActionPerformed);
+        mnuHistoriales.add(mniDespacho);
 
-        mnuMovimientos.setText("MOVIMIENTOS");
-        jMenuBar1.add(mnuMovimientos);
+        jMenuBar1.add(mnuHistoriales);
 
         setJMenuBar(jMenuBar1);
 
@@ -213,6 +215,17 @@ public class FrmPrincipal extends javax.swing.JFrame {
         this.setVisible(false);
     }//GEN-LAST:event_mniPedidosOnlineActionPerformed
 
+    private void mniDespachoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniDespachoActionPerformed
+        gestor.getHistorialNavegacion().navegarA("Despacho");
+        
+        if (frmDespacho == null) {
+            frmDespacho = new FrmDespacho();
+            frmDespacho.setPrincipal(this);
+        }
+        frmDespacho.setVisible(true);
+        this.setVisible(false);
+    }//GEN-LAST:event_mniDespachoActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -221,12 +234,12 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem mniCategoria;
     private javax.swing.JMenuItem mniClientes;
+    private javax.swing.JMenuItem mniDespacho;
     private javax.swing.JMenuItem mniHistorialPrecios;
     private javax.swing.JMenuItem mniPedidosOnline;
     private javax.swing.JMenuItem mniProductos;
     private javax.swing.JMenuItem mniVentas;
     private javax.swing.JMenu mnuDatos;
     private javax.swing.JMenu mnuHistoriales;
-    private javax.swing.JMenu mnuMovimientos;
     // End of variables declaration//GEN-END:variables
 }

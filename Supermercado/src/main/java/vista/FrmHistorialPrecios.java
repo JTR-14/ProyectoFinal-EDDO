@@ -28,6 +28,7 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         inicializarTablaHistorial();
         cargarHistorialCompleto();
         actualizarEstadisticas();
+        cargarFechasIniciales();
     }
     
     private void cargarProductos() {
@@ -139,38 +140,74 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
     }
     
     private void buscarPorFecha() {
-        String fechaInicio = txtFechaInicio.getText().trim();
-        String fechaFin = txtFechaFin.getText().trim();
+    // 1. Validar que se haya seleccionado algo en todos los combos
+    if (cmbDiaInicio.getSelectedItem() == null || cmbMesInicio.getSelectedItem() == null || cmbAnioInicio.getSelectedItem() == null ||
+        cmbDiaFin.getSelectedItem() == null || cmbMesFin.getSelectedItem() == null || cmbAnioFin.getSelectedItem() == null) {
         
-        if (fechaInicio.isEmpty() || fechaFin.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "Ingrese ambas fechas para la búsqueda",
-                "Fechas Requeridas",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        try {
-            List<HistorialCambiosPrecio.CambioPrecio> cambios = historial.buscarCambiosPorFecha(fechaInicio, fechaFin);
-            
-            modeloHistorial.setRowCount(0);
-            for (HistorialCambiosPrecio.CambioPrecio cambio : cambios) {
-                modeloHistorial.addRow(cambio.toTableRow());
-            }
-            
-            lblTotalRegistros.setText("Registros encontrados: " + cambios.size() + 
-                                    " (" + fechaInicio + " a " + fechaFin + ")");
-            logger.info("Búsqueda por fecha - Desde: " + fechaInicio + " Hasta: " + fechaFin + 
-                       " - Resultados: " + cambios.size());
-            
-        } catch (Exception ex) {
-            logger.severe("Error al buscar por fecha: " + ex.getMessage());
-            JOptionPane.showMessageDialog(this, 
-                "Error al buscar por fecha: " + ex.getMessage(),
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
-        }
+        JOptionPane.showMessageDialog(this,
+            "Por favor, configure las fechas completas (Día, Mes y Año)",
+            "Fechas Incompletas",
+            JOptionPane.WARNING_MESSAGE);
+        return;
     }
+
+    // 2. Construir la fecha de INICIO (Formato: "YYYY-MM-DD")
+    String anioInicio = (String) cmbAnioInicio.getSelectedItem();
+    String mesInicio = obtenerNumeroMes((String) cmbMesInicio.getSelectedItem());
+    String diaInicio = (String) cmbDiaInicio.getSelectedItem();
+    
+    String fechaInicio = anioInicio + "-" + mesInicio + "-" + diaInicio;
+
+    // 3. Construir la fecha de FIN (Formato: "YYYY-MM-DD")
+    String anioFin = (String) cmbAnioFin.getSelectedItem();
+    String mesFin = obtenerNumeroMes((String) cmbMesFin.getSelectedItem());
+    String diaFin = (String) cmbDiaFin.getSelectedItem();
+    
+    String fechaFin = anioFin + "-" + mesFin + "-" + diaFin;
+
+    // --- El resto de tu lógica se mantiene igual ---
+    try {
+        // Llamada al método de búsqueda con los Strings ya formateados
+        List<HistorialCambiosPrecio.CambioPrecio> cambios = historial.buscarCambiosPorFecha(fechaInicio, fechaFin);
+        
+        modeloHistorial.setRowCount(0);
+        for (HistorialCambiosPrecio.CambioPrecio cambio : cambios) {
+            modeloHistorial.addRow(cambio.toTableRow());
+        }
+        
+        lblTotalRegistros.setText("Registros encontrados: " + cambios.size() + 
+                                " (" + fechaInicio + " a " + fechaFin + ")");
+        
+        logger.info("Búsqueda por fecha - Desde: " + fechaInicio + " Hasta: " + fechaFin + 
+                    " - Resultados: " + cambios.size());
+        
+    } catch (Exception ex) {
+        logger.severe("Error al buscar por fecha: " + ex.getMessage());
+        JOptionPane.showMessageDialog(this, 
+            "Error al buscar por fecha: " + ex.getMessage(),
+            "Error", 
+            JOptionPane.ERROR_MESSAGE);
+    }
+}    
+    private String obtenerNumeroMes(String nombreMes) {
+    if (nombreMes == null) return "01"; // Protección por defecto
+    
+    switch (nombreMes) {
+        case "Enero": return "01";
+        case "Febrero": return "02";
+        case "Marzo": return "03";
+        case "Abril": return "04";
+        case "Mayo": return "05";
+        case "Junio": return "06";
+        case "Julio": return "07";
+        case "Agosto": return "08";
+        case "Septiembre": return "09";
+        case "Octubre": return "10";
+        case "Noviembre": return "11";
+        case "Diciembre": return "12";
+        default: return "01";
+    }
+}
     
     private void verDetallesCambio() {
         int fila = tblHistorial.getSelectedRow();
@@ -320,11 +357,39 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
     
     private void limpiarFiltros() {
         cmbProducto.setSelectedIndex(0);
-        txtFechaInicio.setText("");
-        txtFechaFin.setText("");
+        cmbMesInicio.setSelectedIndex(0);
+        cmbDiaInicio.setSelectedIndex(0);
+        cmbAnioInicio.setSelectedIndex(0);
+        cmbMesFin.setSelectedIndex(0);
+        cmbDiaFin.setSelectedIndex(0);
+        cmbAnioFin.setSelectedIndex(0);
         cargarHistorialCompleto();
     }
-
+private void cargarFechasIniciales() {
+    String[] meses = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
+    
+    // 1. Llenar Meses
+    for (String mes : meses) {
+        cmbMesInicio.addItem(mes);
+        cmbMesFin.addItem(mes);
+    }
+    
+    // 2. Llenar Años (Ejemplo: Del año actual - 5 hasta el año actual + 5)
+    int anioActual = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+    for (int i = anioActual - 5; i <= anioActual + 5; i++) {
+        cmbAnioInicio.addItem(String.valueOf(i));
+        cmbAnioFin.addItem(String.valueOf(i));
+    }
+    
+    // 3. Seleccionar fechas por defecto (Opcional)
+    cmbAnioInicio.setSelectedItem(String.valueOf(anioActual));
+    cmbAnioFin.setSelectedItem(String.valueOf(anioActual));
+    
+    // 4. Calcular los días por primera vez
+    actualizarDias(cmbAnioInicio, cmbMesInicio, cmbDiaInicio);
+    actualizarDias(cmbAnioFin, cmbMesFin, cmbDiaFin);
+}
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -332,19 +397,25 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         txtId = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         datos = new javax.swing.JPanel();
-        txtFechaFin = new javax.swing.JTextField();
-        txtFechaInicio = new javax.swing.JTextField();
         cmbProducto = new javax.swing.JComboBox<>();
         lblTotalRegistros = new javax.swing.JLabel();
         lblTotalCambios = new javax.swing.JLabel();
         lblDisminuciones = new javax.swing.JLabel();
         lblAumentos = new javax.swing.JLabel();
+        cmbMesInicio = new javax.swing.JComboBox<>();
+        jLabel2 = new javax.swing.JLabel();
+        cmbDiaInicio = new javax.swing.JComboBox<>();
+        cmbAnioInicio = new javax.swing.JComboBox<>();
+        jLabel3 = new javax.swing.JLabel();
+        cmbMesFin = new javax.swing.JComboBox<>();
+        cmbDiaFin = new javax.swing.JComboBox<>();
+        cmbAnioFin = new javax.swing.JComboBox<>();
+        btnBuscarFecha = new javax.swing.JButton();
+        btnBuscarProducto = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
-        btnBuscarFecha = new javax.swing.JButton();
         btnLimpiar = new javax.swing.JButton();
         btnEstadisticas = new javax.swing.JButton();
-        btnBuscarProducto = new javax.swing.JButton();
         btnVolver = new javax.swing.JButton();
         btnExportar = new javax.swing.JButton();
         btnDeshacer = new javax.swing.JButton();
@@ -361,14 +432,9 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         datos.setBackground(new java.awt.Color(243, 243, 243));
         datos.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Datos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 14))); // NOI18N
 
-        txtFechaFin.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        txtFechaFin.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Fecha final:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
-
-        txtFechaInicio.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        txtFechaInicio.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Fecha inicio:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
-
         cmbProducto.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         cmbProducto.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Producto:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Montserrat Medium", 0, 12))); // NOI18N
+        cmbProducto.addActionListener(this::cmbProductoActionPerformed);
 
         lblTotalRegistros.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -378,80 +444,135 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
 
         lblAumentos.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
+        cmbMesInicio.setBorder(javax.swing.BorderFactory.createTitledBorder("Mes:"));
+        cmbMesInicio.addActionListener(this::cmbMesInicioActionPerformed);
+
+        jLabel2.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        jLabel2.setText("Fecha Inicio:");
+
+        cmbDiaInicio.setBorder(javax.swing.BorderFactory.createTitledBorder("Dia:"));
+
+        cmbAnioInicio.setBorder(javax.swing.BorderFactory.createTitledBorder("Año:"));
+        cmbAnioInicio.addActionListener(this::cmbAnioInicioActionPerformed);
+
+        jLabel3.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        jLabel3.setText("Fecha Fin:");
+
+        cmbMesFin.setBorder(javax.swing.BorderFactory.createTitledBorder("Mes:"));
+        cmbMesFin.addActionListener(this::cmbMesFinActionPerformed);
+
+        cmbDiaFin.setBorder(javax.swing.BorderFactory.createTitledBorder("Dia:"));
+
+        cmbAnioFin.setBorder(javax.swing.BorderFactory.createTitledBorder("Año:"));
+        cmbAnioFin.addActionListener(this::cmbAnioFinActionPerformed);
+
+        btnBuscarFecha.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        btnBuscarFecha.setText("BUSCAR FECHA");
+        btnBuscarFecha.addActionListener(this::btnBuscarFechaActionPerformed);
+
+        btnBuscarProducto.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
+        btnBuscarProducto.setText("BUSCAR PRODUCTO");
+        btnBuscarProducto.addActionListener(this::btnBuscarProductoActionPerformed);
+
         javax.swing.GroupLayout datosLayout = new javax.swing.GroupLayout(datos);
         datos.setLayout(datosLayout);
         datosLayout.setHorizontalGroup(
             datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(datosLayout.createSequentialGroup()
-                .addGap(35, 35, 35)
                 .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(datosLayout.createSequentialGroup()
+                        .addGap(33, 33, 33)
                         .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtFechaInicio, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtFechaFin, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(73, 73, 73)
-                        .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblTotalRegistros, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblTotalCambios, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(38, 38, 38)
-                        .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblAumentos, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblDisminuciones, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jLabel3)
+                            .addGroup(datosLayout.createSequentialGroup()
+                                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(datosLayout.createSequentialGroup()
+                                        .addComponent(cmbAnioFin, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(cmbMesFin, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(jLabel2)
+                                    .addGroup(datosLayout.createSequentialGroup()
+                                        .addComponent(cmbAnioInicio, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(cmbMesInicio, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(18, 18, 18)
+                                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cmbDiaInicio, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(cmbDiaFin, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                    .addGroup(datosLayout.createSequentialGroup()
+                        .addGap(166, 166, 166)
+                        .addComponent(btnBuscarFecha)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 128, Short.MAX_VALUE)
+                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(lblTotalRegistros, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblTotalCambios, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(cmbProducto, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(132, Short.MAX_VALUE))
+                .addGap(25, 25, 25)
+                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(lblAumentos, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblDisminuciones, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnBuscarProducto))
+                .addGap(34, 34, 34))
         );
         datosLayout.setVerticalGroup(
             datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(datosLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblTotalRegistros, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblDisminuciones, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtFechaInicio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(datosLayout.createSequentialGroup()
-                        .addGap(0, 0, 0)
-                        .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblTotalCambios, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblAumentos, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, datosLayout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
-                        .addComponent(txtFechaFin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)))
-                .addComponent(cmbProducto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                        .addComponent(lblTotalRegistros, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(13, 13, 13)
+                        .addComponent(lblTotalCambios, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(datosLayout.createSequentialGroup()
+                        .addComponent(lblAumentos, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(lblDisminuciones, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(btnBuscarProducto, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbProducto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(27, 27, 27))
+            .addGroup(datosLayout.createSequentialGroup()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cmbDiaInicio)
+                    .addComponent(cmbAnioInicio)
+                    .addComponent(cmbMesInicio))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(datosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cmbMesFin)
+                    .addComponent(cmbDiaFin)
+                    .addComponent(cmbAnioFin))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnBuscarFecha, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(7, 7, 7))
         );
 
         jLabel1.setFont(new java.awt.Font("Montserrat ExtraBold", 0, 24)); // NOI18N
         jLabel1.setText("Historial Precios");
-
-        btnBuscarFecha.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnBuscarFecha.setText("BUSCAR FECHA");
-        btnBuscarFecha.addActionListener(this::btnBuscarFechaActionPerformed);
 
         btnLimpiar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnLimpiar.setText("LIMPIAR");
         btnLimpiar.addActionListener(this::btnLimpiarActionPerformed);
 
         btnEstadisticas.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnEstadisticas.setText("ESTADÍSTICAS");
+        btnEstadisticas.setText("ESTADÍSTICAS DE PRECIOS");
         btnEstadisticas.addActionListener(this::btnEstadisticasActionPerformed);
-
-        btnBuscarProducto.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnBuscarProducto.setText("BUSCAR PRODUCTO");
-        btnBuscarProducto.addActionListener(this::btnBuscarProductoActionPerformed);
 
         btnVolver.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
         btnVolver.setText("VOLVER");
         btnVolver.addActionListener(this::btnVolverActionPerformed);
 
         btnExportar.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnExportar.setText("EXPORTAR");
+        btnExportar.setText("INFORME DE CAMBIOS DE PRECIO");
         btnExportar.addActionListener(this::btnExportarActionPerformed);
 
         btnDeshacer.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnDeshacer.setText("DESHACER");
+        btnDeshacer.setText("DESHACER ULTIMO CAMBIO");
         btnDeshacer.addActionListener(this::btnDeshacerActionPerformed);
 
         btnVerDetalles.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
@@ -459,44 +580,36 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         btnVerDetalles.addActionListener(this::btnVerDetallesActionPerformed);
 
         btnVerUltimo.setFont(new java.awt.Font("Montserrat Medium", 0, 12)); // NOI18N
-        btnVerUltimo.setText("VER ÚLTIMO");
+        btnVerUltimo.setText("VER ÚLTIMO CAMBIO");
         btnVerUltimo.addActionListener(this::btnVerUltimoActionPerformed);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(55, 55, 55)
-                        .addComponent(btnVerDetalles)
-                        .addGap(90, 90, 90)
-                        .addComponent(btnLimpiar))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(btnBuscarFecha)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnBuscarProducto)))
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(72, 72, 72)
-                        .addComponent(btnVerUltimo))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(88, 88, 88)
+                        .addComponent(btnVerUltimo)
+                        .addGap(87, 87, 87))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                        .addGap(37, 37, 37)
                         .addComponent(btnEstadisticas)
-                        .addGap(21, 21, 21)))
+                        .addGap(53, 53, 53)
+                        .addComponent(btnVerDetalles)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
-                        .addComponent(btnExportar)
-                        .addGap(45, 45, 45)
                         .addComponent(btnDeshacer)
-                        .addContainerGap())
+                        .addGap(121, 121, 121)
+                        .addComponent(btnVolver))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(90, 90, 90)
-                        .addComponent(btnVolver)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addGap(53, 53, 53)
+                        .addComponent(btnLimpiar)
+                        .addGap(56, 56, 56)
+                        .addComponent(btnExportar)))
+                .addContainerGap(143, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -504,17 +617,15 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnEstadisticas)
-                    .addComponent(btnBuscarProducto)
-                    .addComponent(btnBuscarFecha)
-                    .addComponent(btnExportar)
-                    .addComponent(btnDeshacer))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnVolver)
+                    .addComponent(btnLimpiar)
                     .addComponent(btnVerDetalles)
+                    .addComponent(btnExportar))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnVerUltimo)
-                    .addComponent(btnLimpiar))
-                .addGap(21, 21, 21))
+                    .addComponent(btnDeshacer)
+                    .addComponent(btnVolver))
+                .addContainerGap())
         );
 
         tblHistorial.setModel(new javax.swing.table.DefaultTableModel(
@@ -540,16 +651,22 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(289, 289, 289)
-                .addComponent(jLabel1)
-                .addGap(26, 26, 26))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(407, 407, 407)
+                        .addComponent(jLabel1))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(26, 26, 26)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(datos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1))
-                .addGap(0, 37, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(datos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -558,22 +675,24 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(datos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(20, 20, 20))
+                .addGap(15, 15, 15))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         pack();
@@ -628,6 +747,87 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
         verUltimoCambio();
     }//GEN-LAST:event_btnVerUltimoActionPerformed
 
+    private void cmbMesInicioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbMesInicioActionPerformed
+        actualizarDias(cmbAnioInicio, cmbMesInicio, cmbDiaInicio);
+    }//GEN-LAST:event_cmbMesInicioActionPerformed
+
+    private void cmbAnioInicioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbAnioInicioActionPerformed
+       actualizarDias(cmbAnioInicio, cmbMesInicio, cmbDiaInicio);
+    }//GEN-LAST:event_cmbAnioInicioActionPerformed
+
+    private void cmbMesFinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbMesFinActionPerformed
+        actualizarDias(cmbAnioFin, cmbMesFin, cmbDiaFin);
+    }//GEN-LAST:event_cmbMesFinActionPerformed
+
+    private void cmbAnioFinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbAnioFinActionPerformed
+        actualizarDias(cmbAnioFin, cmbMesFin, cmbDiaFin);
+    }//GEN-LAST:event_cmbAnioFinActionPerformed
+
+    private void cmbProductoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbProductoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbProductoActionPerformed
+// Método maestro para calcular días dinámicamente
+private void actualizarDias(javax.swing.JComboBox<String> cmbAnio, javax.swing.JComboBox<String> cmbMes, javax.swing.JComboBox<String> cmbDia) {
+    // 1. Validar que haya datos seleccionados
+    if (cmbAnio.getSelectedItem() == null || cmbMes.getSelectedItem() == null) {
+        return;
+    }
+
+    // 2. Guardar el día que estaba seleccionado antes de borrar todo (para restaurarlo si es posible)
+    String diaSeleccionadoPrevio = (String) cmbDia.getSelectedItem();
+
+    // 3. Obtener Año y Mes numéricos
+    int anio = Integer.parseInt((String) cmbAnio.getSelectedItem());
+    int mesIndex = cmbMes.getSelectedIndex(); // 0=Enero, 1=Febrero...
+    
+    // 4. Calcular cuántos días tiene ese mes
+    int diasEnMes = 0;
+    
+    switch (mesIndex) {
+        case 0: // Enero
+        case 2: // Marzo
+        case 4: // Mayo
+        case 6: // Julio
+        case 7: // Agosto
+        case 9: // Octubre
+        case 11: // Diciembre
+            diasEnMes = 31;
+            break;
+        case 3: // Abril
+        case 5: // Junio
+        case 8: // Septiembre
+        case 10: // Noviembre
+            diasEnMes = 30;
+            break;
+        case 1: // Febrero (El complicado)
+            // Algoritmo de año bisiesto
+            if ((anio % 4 == 0 && anio % 100 != 0) || (anio % 400 == 0)) {
+                diasEnMes = 29;
+            } else {
+                diasEnMes = 28;
+            }
+            break;
+        default:
+            diasEnMes = 30;
+    }
+
+    // 5. Llenar el ComboBox de Días
+    cmbDia.removeAllItems(); // Borrar los anteriores
+    for (int i = 1; i <= diasEnMes; i++) {
+        // Agregamos el 0 a la izquierda para que se vea bonito (01, 02... 10)
+        cmbDia.addItem(String.format("%02d", i));
+    }
+
+    // 6. Intentar restaurar la selección previa (UX)
+    // Si antes tenías seleccionado el día 30 y cambias a Febrero, se pondrá el 1 automáticamente.
+    // Pero si tenías el 5 y cambias de mes, se mantendrá en el 5.
+    if (diaSeleccionadoPrevio != null) {
+        int diaPrevio = Integer.parseInt(diaSeleccionadoPrevio);
+        if (diaPrevio <= diasEnMes) {
+            cmbDia.setSelectedItem(diaSeleccionadoPrevio);
+        }
+    }
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBuscarFecha;
@@ -639,9 +839,17 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
     private javax.swing.JButton btnVerDetalles;
     private javax.swing.JButton btnVerUltimo;
     private javax.swing.JButton btnVolver;
+    private javax.swing.JComboBox<String> cmbAnioFin;
+    private javax.swing.JComboBox<String> cmbAnioInicio;
+    private javax.swing.JComboBox<String> cmbDiaFin;
+    private javax.swing.JComboBox<String> cmbDiaInicio;
+    private javax.swing.JComboBox<String> cmbMesFin;
+    private javax.swing.JComboBox<String> cmbMesInicio;
     private javax.swing.JComboBox<String> cmbProducto;
     private javax.swing.JPanel datos;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -650,8 +858,6 @@ public class FrmHistorialPrecios extends javax.swing.JFrame {
     private javax.swing.JLabel lblTotalCambios;
     private javax.swing.JLabel lblTotalRegistros;
     private javax.swing.JTable tblHistorial;
-    private javax.swing.JTextField txtFechaFin;
-    private javax.swing.JTextField txtFechaInicio;
     private javax.swing.JTextField txtId;
     // End of variables declaration//GEN-END:variables
 

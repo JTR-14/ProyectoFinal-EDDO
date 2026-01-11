@@ -45,7 +45,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="mnuHistoriales">
           <Properties>
-            <Property name="text" type="java.lang.String" value="HISTORIALES"/>
+            <Property name="text" type="java.lang.String" value="ADMINISTRADOR"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="mniHistorialPrecios">
@@ -64,12 +64,15 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mniPedidosOnlineActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="mniDespacho">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="CARGA DE CAMIONES"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mniDespachoActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
-        </Menu>
-        <Menu class="javax.swing.JMenu" name="mnuMovimientos">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="MOVIMIENTOS"/>
-          </Properties>
         </Menu>
       </SubComponents>
     </Menu>

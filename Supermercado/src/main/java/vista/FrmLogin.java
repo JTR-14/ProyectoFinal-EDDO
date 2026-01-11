@@ -155,15 +155,12 @@ public class FrmLogin extends javax.swing.JFrame {
         if(usuario != null){
             JOptionPane.showMessageDialog(null, "¡Bienvenido "+usuario.getNombreCompleto(),"Mensaje",1);
             ControladorProductos.cargarDatosAlArbol();
-            // CORRECCIÓN: Guardar usuario en el gestor del sistema
             GestorSistema gestor = GestorSistema.getInstancia();
             gestor.setUsuarioActual(usuario);
             
-            // Registrar navegación inicial
             gestor.getHistorialNavegacion().navegarA("Login");
             gestor.getHistorialNavegacion().navegarA("Principal");
             
-            // CORRECCIÓN: Redirigir a FrmPrincipal en lugar de FrmClientes
             FrmPrincipal principal = new FrmPrincipal(usuario);
             this.dispose();
             principal.setVisible(true);
@@ -191,7 +188,6 @@ public class FrmLogin extends javax.swing.JFrame {
         FlatLightLaf.setup();
         UIManager.put( "Button.arc", 999 );
         UIManager.put( "TextComponent.arc", 999 );
-        /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new FrmLogin().setVisible(true));
     }
 
