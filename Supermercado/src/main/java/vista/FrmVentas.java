@@ -740,6 +740,8 @@ public class FrmVentas extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnRegistrar1ActionPerformed
 
+    
+    
     private void btnEliminar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminar1ActionPerformed
         int fila = tblDetalles.getSelectedRow();
         if (fila >= 0) {

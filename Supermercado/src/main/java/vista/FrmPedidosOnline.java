@@ -291,80 +291,127 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
     }
     
     private void procesarSiguientePedido() {
-        if (gestor.getColaPedidos().estaVacia()) {
-            JOptionPane.showMessageDialog(this,
-                "No hay pedidos pendientes en la cola",
-                "Cola Vacía",
-                JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
+    if (gestor.getColaPedidos().estaVacia()) {
+        JOptionPane.showMessageDialog(this,
+            "No hay pedidos pendientes en la cola",
+            "Cola Vacía",
+            JOptionPane.INFORMATION_MESSAGE);
+        return;
+    }
+    
+    Pedido pedidoProcesar = gestor.getColaPedidos().procesarSiguientePedido();
+    
+    if (pedidoProcesar != null) {
+        int opcion = JOptionPane.showConfirmDialog(this,
+            "📦 PROCESAR PEDIDO #" + pedidoProcesar.getIdPedido() + "\n\n" +
+            "Cliente: " + pedidoProcesar.getCliente().getNombre() + "\n" +
+            "Total: " + String.format("S/ %.2f", pedidoProcesar.calcularTotal()) + "\n" +
+            "Productos: " + pedidoProcesar.getDetalles().size() + " items\n\n" +
+            "¿Desea convertir este pedido en una venta?",
+            "Procesar Pedido",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE);
         
-        Pedido pedidoProcesar = gestor.getColaPedidos().procesarSiguientePedido();
-        
-        if (pedidoProcesar != null) {
-            int opcion = JOptionPane.showConfirmDialog(this,
-                "📦 PROCESAR PEDIDO #" + pedidoProcesar.getIdPedido() + "\n\n" +
-                "Cliente: " + pedidoProcesar.getCliente().getNombre() + "\n" +
-                "Total: " + String.format("S/ %.2f", pedidoProcesar.calcularTotal()) + "\n" +
-                "Productos: " + pedidoProcesar.getDetalles().size() + " items\n\n" +
-                "¿Desea convertir este pedido en una venta?",
-                "Procesar Pedido",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE);
-            
-            if (opcion == JOptionPane.YES_OPTION) {
-                try {
-                    // Convertir Pedido a Venta
-                    Venta venta = convertirPedidoAVenta(pedidoProcesar);
+        if (opcion == JOptionPane.YES_OPTION) {
+            try {
+                // Convertir Pedido a Venta
+                Venta venta = convertirPedidoAVenta(pedidoProcesar);
+                
+                // REGISTRAR VENTA EN BD
+                int idVenta = DALVentas.registrarVenta(venta);
+                
+                if (idVenta > 0) {
+                    // ✅✅✅ CORRECCIÓN CRÍTICA: ACTUALIZAR STOCK EN ÁRBOL AVL
+                    actualizarStockDesdeVenta(venta);
                     
-                    // Registrar venta en BD
-                    int idVenta = DALVentas.registrarVenta(venta);
+                    // Marcar pedido como completado
+                    gestor.getColaPedidos().completarPedido(pedidoProcesar);
                     
-                    if (idVenta > 0) {
-                        // Marcar pedido como completado
-                        gestor.getColaPedidos().completarPedido(pedidoProcesar);
-                        
-                        JOptionPane.showMessageDialog(this,
-                            "✅ PEDIDO PROCESADO EXITOSAMENTE\n\n" +
-                            "Pedido #" + pedidoProcesar.getIdPedido() + "\n" +
-                            "Convertido a Venta #" + idVenta + "\n" +
-                            "Cliente: " + pedidoProcesar.getCliente().getNombre() + "\n" +
-                            "Total: " + String.format("S/ %.2f", venta.getMontoTotal()),
-                            "Pedido Completado",
-                            JOptionPane.INFORMATION_MESSAGE);
-                        
-                        actualizarTablaCola();
-                        actualizarEstadoCola();
-                        
-                        logger.info("Pedido procesado y convertido a venta - ID Pedido: " + 
-                                  pedidoProcesar.getIdPedido() + " - ID Venta: " + idVenta);
-                    } else {
-                        JOptionPane.showMessageDialog(this,
-                            "Error al convertir pedido a venta",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                        // Devolver pedido a la cola
-                        gestor.getColaPedidos().getColaPedidos().add(pedidoProcesar);
-                    }
-                    
-                } catch (Exception ex) {
-                    logger.severe("Error al procesar pedido: " + ex.getMessage());
                     JOptionPane.showMessageDialog(this,
-                        "Error al procesar pedido: " + ex.getMessage(),
+                        "✅ PEDIDO PROCESADO EXITOSAMENTE\n\n" +
+                        "Pedido #" + pedidoProcesar.getIdPedido() + "\n" +
+                        "Convertido a Venta #" + idVenta + "\n" +
+                        "Cliente: " + pedidoProcesar.getCliente().getNombre() + "\n" +
+                        "Total: " + String.format("S/ %.2f", venta.getMontoTotal()),
+                        "Pedido Completado",
+                        JOptionPane.INFORMATION_MESSAGE);
+                    
+                    // Forzar recarga del árbol AVL para sincronizar con BD
+                    ControladorProductos.forzarRecarga();
+                    
+                    actualizarTablaCola();
+                    actualizarEstadoCola();
+                    
+                    logger.info("Pedido procesado y convertido a venta - ID Pedido: " + 
+                              pedidoProcesar.getIdPedido() + " - ID Venta: " + idVenta);
+                    
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                        "Error al convertir pedido a venta",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
                     // Devolver pedido a la cola
+                    pedidoProcesar.setEstado("PENDIENTE");
                     gestor.getColaPedidos().getColaPedidos().add(pedidoProcesar);
                 }
-            } else {
-                // Si no se confirma, devolver a la cola
+                
+            } catch (Exception ex) {
+                logger.severe("Error al procesar pedido: " + ex.getMessage());
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this,
+                    "Error al procesar pedido: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+                // Devolver pedido a la cola
                 pedidoProcesar.setEstado("PENDIENTE");
                 gestor.getColaPedidos().getColaPedidos().add(pedidoProcesar);
-                actualizarTablaCola();
             }
+        } else {
+            // Si no se confirma, devolver a la cola
+            pedidoProcesar.setEstado("PENDIENTE");
+            gestor.getColaPedidos().getColaPedidos().add(pedidoProcesar);
+            actualizarTablaCola();
         }
     }
-    
+}
+
+// ✅ NUEVO MÉTODO: Actualizar stock en árbol AVL desde venta
+    private void actualizarStockDesdeVenta(Venta venta) {
+        try {
+            NodoEnDoble<DetalleVenta> p = venta.getDetalles().getPrimero();
+            
+            while (p != null) {
+                DetalleVenta detalle = p.getInfo();
+                
+                // Buscar producto en el árbol AVL
+                Producto producto = ControladorProductos.buscarPorCodigo(detalle.getProducto().getCodigo());
+                
+                if (producto != null) {
+                    // Calcular nuevo stock
+                    int nuevoStock = producto.getStockActual() - detalle.getCantidad();
+                    if (nuevoStock < 0) nuevoStock = 0;
+                    
+                    // Actualizar producto en árbol AVL
+                    producto.setStockActual(nuevoStock);
+                    ControladorProductos.actualizarProductoEnArbol(producto);
+                    
+                    logger.info("Stock actualizado - Producto: " + producto.getCodigo() + 
+                              " - Cantidad vendida: " + detalle.getCantidad() + 
+                              " - Stock nuevo: " + nuevoStock);
+                } else {
+                    logger.warning("Producto no encontrado en árbol AVL: " + 
+                                 detalle.getProducto().getCodigo());
+                }
+                
+                p = p.getSgte();
+            }
+            
+        } catch (Exception ex) {
+            logger.severe("Error al actualizar stock desde venta: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+        
     // MÉTODO CORREGIDO: Convertir Pedido a Venta
     private Venta convertirPedidoAVenta(Pedido pedido) {
         Venta venta = new Venta();
@@ -777,14 +824,15 @@ public class FrmPedidosOnline extends javax.swing.JFrame {
                 .addGap(26, 26, 26))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(26, 26, 26)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(datos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 735, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(52, 52, 52)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(datos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(0, 40, Short.MAX_VALUE))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 689, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 540, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 20, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
