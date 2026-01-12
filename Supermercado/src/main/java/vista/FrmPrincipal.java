@@ -62,12 +62,14 @@ public class FrmPrincipal extends javax.swing.JFrame {
         if (idRol == 2 || idRol == 4) { // Cajero o Vendedor
             mniCategoria.setEnabled(false);
             mniHistorialPrecios.setEnabled(false);
+            mniDespacho.setEnabled(false);
         }
         
         // Si es solo almacenero
         if (idRol == 3) { // Almacenero
             mniVentas.setEnabled(false);
             mniPedidosOnline.setEnabled(false);
+            mniDespacho.setEnabled(false);
         }
     }
  
