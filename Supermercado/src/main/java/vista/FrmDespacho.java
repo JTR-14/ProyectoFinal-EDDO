@@ -4,7 +4,6 @@
  */
 package vista;
 
-import javax.swing.JOptionPane;
 import utiles.GestorSistema;
 import modelo.Pedido;
 import javax.swing.DefaultListModel;
@@ -32,7 +31,6 @@ public class FrmDespacho extends javax.swing.JFrame {
     private final int CAPACIDAD_CAMION = 10;
     public FrmDespacho() {
         initComponents();
-        
         // Inicializar estructuras
         colaAlmacen = new Cola<>();
         pilaCamion = new Pila<>();
@@ -44,8 +42,23 @@ public class FrmDespacho extends javax.swing.JFrame {
         // Vincular modelos a las listas visuales
         lstAlmacen.setModel(modeloAlmacen);
         lstCamion.setModel(modeloCamion);
-        
+        cargarDatosPrueba();
         actualizarTablas();
+    }
+    
+    private void cargarDatosPrueba() {
+        colaAlmacen.encolar(crearPedidoFalso(1001, "Minimarket Sol"));
+        colaAlmacen.encolar(crearPedidoFalso(1002, "Bodega Don Pepe"));
+        colaAlmacen.encolar(crearPedidoFalso(1003, "Tienda La Esquina"));
+        colaAlmacen.encolar(crearPedidoFalso(1004, "Bazar Marco"));
+        colaAlmacen.encolar(crearPedidoFalso(1005, "Restaurante El Gusto"));
+    }
+    
+    private Pedido crearPedidoFalso(int id, String cliente) {
+        Pedido p = new Pedido();
+        p.setIdPedido(id);
+        p.setClientes(cliente);
+        return p;
     }
     public void setPrincipal(FrmPrincipal principal){
         this.principal = principal;
@@ -225,6 +238,7 @@ public class FrmDespacho extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnEntregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEntregarActionPerformed
@@ -247,8 +261,7 @@ public class FrmDespacho extends javax.swing.JFrame {
     }//GEN-LAST:event_btnEntregarActionPerformed
 
     private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
-        gestor.getHistorialNavegacion().navegarA("Principal");
-        logger.info("Volviendo al formulario principal");
+
 
         if (principal != null) {
             principal.setVisible(true);
